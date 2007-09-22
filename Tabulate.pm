@@ -1451,7 +1451,7 @@ HTML::Tabulate - HTML table rendering class
             new_flag => {
                 class => sub { 
                     my ($data, $row, $field) = @_;
-                    $data =~ m/^y$/i ? 'new', 'old';
+                    $data =~ m/^y$/i ? 'new' : 'old';
                 },
             },
         },
