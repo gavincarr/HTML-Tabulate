@@ -32,6 +32,7 @@ my $t = HTML::Tabulate->new({
   tr => { class => 'tr' },
   labels => 1,
   null => '-',
+  trim => 1,
 });
 
 my $dbh;

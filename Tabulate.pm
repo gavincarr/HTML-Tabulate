@@ -11,7 +11,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.26';
+$VERSION = '0.27';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -2164,12 +2164,11 @@ Gavin Carr <gavin@openfusion.com.au>
 
 =head1 COPYRIGHT
 
-Copyright 2003-2006, Gavin Carr. All Rights Reserved.
+Copyright 2003-2008, Gavin Carr.
 
 This program is free software. You may copy or redistribute it under the 
 same terms as perl itself.
 
 =cut
 
-# arch-tag: affab4f7-8dcb-4f32-86f4-ed77cb9e349d
 # vim:sw=4

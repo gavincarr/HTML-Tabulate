@@ -5,7 +5,10 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'HTML::Tabulate',
     'VERSION_FROM'	=> 'Tabulate.pm', # finds $VERSION
-    'PREREQ_PM'		=> {}, # e.g., Module::Name => 1.1
+    'PREREQ_PM'		=> {
+      'URI::Escape' => 0,
+      'Carp'        => 0,
+    }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => 'Tabulate.pm', # retrieve abstract from module
        AUTHOR     => 'Gavin Carr <gavin@openfusion.com.au>') : ()),
