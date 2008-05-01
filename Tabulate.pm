@@ -11,7 +11,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.27';
+$VERSION = '0.28';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -52,6 +52,8 @@ my %VALID_ARG = (
     text => 'SCALAR/HASH/CODE',
     # caption: text to be rendered below table
     caption => 'SCALAR/HASH/CODE',
+    # data_append: data rows to appended to main dataset
+    data_append => 'ARRAY',
 );
 my %VALID_FIELDS = (
     -defaults => 'HASH',
@@ -1255,7 +1257,15 @@ sub body_down
     my $rownum = 1;
     while (my $row = $data_next->()) {
         $body .= $self->tbody($row, $rownum);
-        $body .= $self->row_down($row, $rownum++);
+        $body .= $self->row_down($row, $rownum);
+        $rownum++;
+    }
+    if (my $data_append = $self->{defn_t}->{data_append}) {
+        for my $row (@$data_append) {
+            $body .= $self->tbody($row, $rownum);
+            $body .= $self->row_down($row, $rownum);
+            $rownum++;
+        } 
     }
 
     $body .= $self->end_tag('tbody') . "\n" if $self->{defn_t}->{tbody_open};
@@ -1878,6 +1888,12 @@ For example:
   }
 
 
+=item data_append 
+
+Array reference containing supplementary data rows to be appended to the table
+after the main dataset. data_append rows are currently treated exactly the same 
+as main data rows.
+
 =back
 
 
@@ -2119,8 +2135,9 @@ Some kinds of iterators (pointer objects used to access the members
 of a set) are also supported. If the iterator supports methods called
 First() and Next() or first() and next() then HTML::Tabulate will use
 those methods to walk the dataset. DBIx::Recordset objects and 
-Class::DBI iterators definitely work; beyond those your mileage
-may vary - please let me know your successes and failures.
+Class::DBI and DBIx::Class iterators definitely work; beyond those 
+your mileage may vary - please let me know your successes and 
+failures.
 
 =back
 
