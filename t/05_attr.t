@@ -101,6 +101,9 @@ is($table, $result{render4}, "render4 result ok");
 # Render 5 - mixed static and subref attributes
 $table = render($data, {
   fields => [ qw(emp_id emp_name emp_title) ],
+  tr => { 
+    id => sub { 'tr_' . shift->[0] },
+  },
   field_attr => {
     emp_title => {
       id => sub { shift; 'title_' . shift->[0] },
