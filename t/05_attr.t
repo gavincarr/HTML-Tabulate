@@ -1,6 +1,6 @@
 # attribute testing - test an example of every type of attribute argument
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use HTML::Tabulate qw(render);
 use Data::Dumper;
 use strict;
@@ -96,6 +96,23 @@ $table = render($data, {
 });
 # print $table, "\n";
 is($table, $result{render4}, "render4 result ok");
+
+
+# Render 5 - mixed static and subref attributes
+$table = render($data, {
+  fields => [ qw(emp_id emp_name emp_title) ],
+  field_attr => {
+    emp_title => {
+      id => sub { shift; 'title_' . shift->[0] },
+      class => 'title',
+    },
+  },
+  trim => 1,
+});
+# print $table, "\n";
+is($table, $result{render5}, "render5 result ok");
+
+
 
 
 # arch-tag: 829128bb-13d0-4343-adb2-d12c58059a64

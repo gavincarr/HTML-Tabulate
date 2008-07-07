@@ -11,7 +11,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.28';
+$VERSION = '0.29';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -989,7 +989,12 @@ sub cell_tx_execute
     my ($tx_attr, $value, $row, $field) = @_;
     my %tx2 = ();
     while (my ($k,$v) = each %$tx_attr) {
-        $tx2{$k} = $v->($value, $row, $field) if ref $v eq 'CODE';
+        if (ref $v eq 'CODE') {
+            $tx2{$k} = $v->($value, $row, $field);
+        } 
+        else {
+            $tx2{$k} = $v;
+        }
     }
     return \%tx2;
 }
