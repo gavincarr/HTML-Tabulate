@@ -1,4 +1,4 @@
-# tbody testing
+# Data append testing
 
 use Test::More tests => 6;
 use HTML::Tabulate;
