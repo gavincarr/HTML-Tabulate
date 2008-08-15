@@ -67,6 +67,7 @@ my %FIELD_ATTR = (
     label_format => 'SCALAR/CODE',
     label_link => 'SCALAR/CODE',
     label_escape => 'SCALAR',
+    composite => 'ARRAY',
 );
 my $URI_ESCAPE_CHARS = "^A-Za-z0-9\-_.!~*'()?&;:/=";
 $TITLE_HEADING_LEVEL = 'h2';   # TODO: deprecated
@@ -958,9 +959,21 @@ sub cell_content
 {
     my $self = shift;
     my ($row, $field, $fattr) = @_;
+    my $value;
 
-    # Get value from $row
-    my $value = $self->cell_value(@_);
+    # Composite fields - concatenate members together
+    if (my $composite = $fattr->{composite}) {
+        my @composite = ();
+        for my $f (@$composite) {
+            push @composite, $self->cell($row, $f, undef, undef, tags => 0);
+        }
+        $value = join ' ', @composite;
+    }
+
+    # Standard field - get value from $row
+    else {
+        $value = $self->cell_value(@_);
+    }
 
     # Format
     my $fvalue = $self->cell_format($value, $fattr, $row, $field);
@@ -1004,7 +1017,9 @@ sub cell_tx_execute
 #
 sub cell 
 {
-    my ($self, $row, $field, $fattr, $tx_attr) = @_;
+    my ($self, $row, $field, $fattr, $tx_attr, %opts) = @_;
+    my $tags = delete $opts{tags};
+    $tags = 1 unless defined $tags;
 
     # Merge default and field attributes first time through (labels + data)
     my $tx_code = 0;
@@ -1019,7 +1034,7 @@ sub cell
         }
     }
 
-    # Generate output
+    # Standard (non-composite) fields
     my ($fvalue, $value) = $self->cell_content($row, $field, $fattr);
 
     # If $tx_addr includes coderefs, execute them
@@ -1027,7 +1042,7 @@ sub cell
         if $tx_code;
 
     # Generate tags
-    return $self->cell_tags($fvalue, $row, $field, $tx_attr);
+    return $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr) : $fvalue;
 }
 
 #
