@@ -20,6 +20,7 @@ t/17_links.t
 t/20_thead.t
 t/21_tbody.t
 t/25_data_append.t
+t/27_composite.t
 t/t1/fbwb
 t/t1/fred
 t/t1/fredbarney
@@ -87,3 +88,5 @@ t/t21/tbody_rows6
 t/t21/tbody_rows7
 t/t21/tbody_rows_attr
 t/t25/simple1
+t/t27/composite1
+t/t27/standard
