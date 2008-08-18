@@ -67,7 +67,9 @@ my %FIELD_ATTR = (
     label_format => 'SCALAR/CODE',
     label_link => 'SCALAR/CODE',
     label_escape => 'SCALAR',
+    default => 'SCALAR',
     composite => 'ARRAY',
+    composite_join => 'SCALAR/CODE',
 );
 my $URI_ESCAPE_CHARS = "^A-Za-z0-9\-_.!~*'()?&;:/=";
 $TITLE_HEADING_LEVEL = 'h2';   # TODO: deprecated
@@ -949,7 +951,33 @@ sub cell_value
         };
     }
 
+    $value = $fattr->{default} if ! defined $value && exists $fattr->{default};
+
     return defined $value ? $value : '';
+}
+
+# 
+# Return a cell value created from one or more other cells
+#
+sub cell_composite
+{
+    my $self = shift;
+    my ($row, $field, $fattr) = @_;
+
+    my $composite = $fattr->{composite} 
+        or die "Missing composite field attribute";
+    my @composite = ();
+    for my $f (@$composite) {
+        push @composite, $self->cell($row, $f, undef, undef, tags => 0);
+    }
+
+    my $composite_join = $fattr->{composite_join} || ' ';
+    if (ref $composite_join eq 'CODE') {
+        return $composite_join->(\@composite, $row, $field);
+    }
+    else {
+        return join ' ', @composite;
+    }
 }
 
 #
@@ -962,12 +990,8 @@ sub cell_content
     my $value;
 
     # Composite fields - concatenate members together
-    if (my $composite = $fattr->{composite}) {
-        my @composite = ();
-        for my $f (@$composite) {
-            push @composite, $self->cell($row, $f, undef, undef, tags => 0);
-        }
-        $value = join ' ', @composite;
+    if ($fattr->{composite}) {
+        $value = $self->cell_composite(@_);
     }
 
     # Standard field - get value from $row
@@ -1150,7 +1174,6 @@ sub tr_attr
         $tr ||= $self->deepcopy($defn_t->{tr_base});
     }
     else {
-        # Note that CODE TRs doesn't work for style => 'across' tables!!
         if (ref $defn_t->{tr} eq 'CODE' && $row) {
             $tr = $defn_t->{tr}->($row);
         }
@@ -1300,17 +1323,22 @@ sub row_across
 {
     my ($self, $data, $rownum, $field) = @_;
     my @cells = ();
+    my @row_across = ();
 
     # Label/heading
-    push @cells, $self->cell(undef, $field) if $self->{defn_t}->{labels};
+    if ($self->{defn_t}->{labels}) {
+        push @cells, $self->cell(undef, $field);
+        push @row_across, $self->cell(undef, $field, undef, undef, tags => 0);
+    }
 
     # Data
     for my $row (@$data) {
         push @cells, $self->cell($row, $field);
+        push @row_across, $self->cell_value($row, $field);
     }
 
     # Build row
-    my $out = $self->start_tag('tr', $self->tr_attr($rownum));
+    my $out = $self->start_tag('tr', $self->tr_attr($rownum, \@row_across));
     $out .= join('', @cells);
     $out .= $self->end_tag('tr') . "\n";
 }
@@ -1554,6 +1582,9 @@ as the attribute value. e.g.
 
 will set the 'class' attribute on the 'tr' to be a lowercased
 underscored version of $r->[1].
+
+Note that for 'across' style tables, the row passed to tr will be
+an arrayref of the cell values that will be rendered in that row.
 
 
 =item thead

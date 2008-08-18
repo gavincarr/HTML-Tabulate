@@ -1,7 +1,7 @@
 # tr/td coderef testing
 
-use Test::More tests => 7;
-use HTML::Tabulate 0.25;
+use Test::More tests => 8;
+use HTML::Tabulate;
 use Data::Dumper;
 use strict;
 
@@ -120,4 +120,20 @@ $table = $t->render($data, {
 report $table, "fattrsub2";
 is($table, $result{fattrsub2}, "fattr sub2 (undef)");
 
-# arch-tag: f26ad97a-f2aa-4e19-b5d1-f970146c5038
+# tr attr sub
+$table = $t->render($data, {
+  labels => [ qw(ID name title), 'Birth Date' ],
+  labels => { 
+    emp_id => 'ID',
+    emp_name => 'Name', 
+    emp_title => 'Title',
+    emp_birth_dt => 'Birth Date',
+  },
+  style => 'across',
+  tr => {
+    class => sub { my $r = shift; my $name = $r->[0]; $name =~ s!\s+!_!; lc "row_$name" }, 
+  },
+});
+report $table, "trsub_across";
+is($table, $result{trsub_across}, "tr attr sub, across");
+

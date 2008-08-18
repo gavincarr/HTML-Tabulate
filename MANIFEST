@@ -46,6 +46,7 @@ t/t12/trsub
 t/t12/fattrsub2
 t/t12/thtdsub2
 t/t12/trsub2
+t/t12/trsub_across
 t/t13/title1
 t/t13/title2
 t/t13/title3
