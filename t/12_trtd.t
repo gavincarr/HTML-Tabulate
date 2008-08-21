@@ -131,7 +131,7 @@ $table = $t->render($data, {
   },
   style => 'across',
   tr => {
-    class => sub { my $r = shift; my $name = $r->[0]; $name =~ s!\s+!_!; lc "row_$name" }, 
+    class => sub { my ($d, $r) = @_; my $name = $r->[0]; $name =~ s!\s+!_!; lc "row_$name" }, 
   },
 });
 report $table, "trsub_across";
