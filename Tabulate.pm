@@ -2120,6 +2120,42 @@ creates a link for the label like:
 Boolean (default true). HTML-escapes '<' and '>' characters in data 
 values.
 
+
+=item composite
+
+Arrayref. New as of version 0.30, composite fields define an ordered 
+list of other fields that you want to appear in a single cell. For
+instance, given individual name fields in your data you might want to
+define a composite name field to use in your table instead e.g.
+
+  field_attr => {
+    fullname => {
+      composite => [ qw(given_name middle_initial surname) ],
+    },
+    surname => {
+      format => sub { uc $_[0] },
+    },
+    # ...
+  },
+
+Typically, the base fields appear in your data (e.g. given_name, 
+middle_initial, and surname) but not in your table, and your 
+composite field appears in the table but not in your data (but
+other patterns do make sense too sometimes).
+
+=item composite_join
+
+Scalar or subroutine reference. If a scalar, functions as the string
+used to join the rendered composite fields together. If a subroutine
+reference, is called with the following arguments:
+
+  $composite_join->(\@composite_fields, $row, $field_name)
+
+and is expected to join the composite fields itself and return the
+joined string.
+
+Default: ' '.
+
 =back
 
 
@@ -2159,7 +2195,6 @@ render() can also be used procedurally if explicitly imported:
 =back
 
 
-
 =head2 DATASETS
 
 HTML::Tabulate supports the following dataset types:
@@ -2195,7 +2230,7 @@ first object if not supplied.
 
 =item Iterators
 
-Some kinds of iterators (pointer objects used to access the members
+Some kinds of iterators (utility objects used to access the members
 of a set) are also supported. If the iterator supports methods called
 First() and Next() or first() and next() then HTML::Tabulate will use
 those methods to walk the dataset. DBIx::Recordset objects and 
