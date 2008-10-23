@@ -3,7 +3,7 @@
 # uses the mysql 'test' database, if available
 #
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
@@ -132,6 +132,15 @@ SKIP: {
 
 $dbh->disconnect if ref $dbh;
 
-
-# arch-tag: 19421229-ab05-4f79-b3d8-6fb2039a3d15
+my @data = ( 
+  [ '123', 'Fred Flintstone', 'CEO' ], 
+  [ '456', 'Barney Rubble', 'Lackey' ],
+  [ '789', 'Wilma Flintstone   ', 'CFO' ], 
+  [ '777', 'Betty Rubble', '' ], 
+);
+my $iterator = sub {
+  return shift @data;
+};
+my $table = $t->render($iterator, { fields => [ qw(emp_id emp_name emp_title) ] });
+is($table, $result{render3}, "code iterator ok");
 

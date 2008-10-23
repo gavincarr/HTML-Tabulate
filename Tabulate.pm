@@ -11,7 +11,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.30';
+$VERSION = '0.31';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -291,13 +291,19 @@ sub derive_fields
     my $defn = $self->{defn_t};
 
     # For iterators, prefetch the first row and use its keys
-    if (ref $set && UNIVERSAL::isa($set,'UNIVERSAL') &&
+    croak "invalid Tabulate data type '$set'" unless ref $set;
+    if (ref $set eq 'CODE') {
+        my $row = $set->();
+        $self->{prefetch} = $row;
+        $defn->{fields} = [ sort keys %$row ] if eval { keys %$row };
+    }
+    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('First') && $set->can('Next')) {
         my $row = $set->First;
         $self->{prefetch} = $row;
         $defn->{fields} = [ sort keys %$row ] if eval { keys %$row };
     }
-    elsif (ref $set && UNIVERSAL::isa($set,'UNIVERSAL') &&
+    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('first') && $set->can('next')) {
         my $row = $set->first;
         $self->{prefetch} = $row;
@@ -473,12 +479,11 @@ sub prerender_munge
     # Try to derive field list if not set
     $self->check_fields($set);
 
-    # Set up a field map for arrayref-of-arrayref sets
+    # Set up a field map in case we have arrayref based data
     my $defn_t = $self->{defn_t};
     my $pos = 0;
     my $fields = ref $defn_t->{in_fields} eq 'ARRAY' ? $defn_t->{in_fields} : $defn_t->{fields};
-    $defn_t->{field_map} = { map  { $_ => $pos++; } @$fields }
-        if ref $set eq 'ARRAY' && @$set && ref $set->[0] eq 'ARRAY';
+    $defn_t->{field_map} = { map  { $_ => $pos++; } @$fields };
 
     # Splice any additional fields into the fields array
     $self->splice_fields if $defn_t->{fields_add};
@@ -1221,13 +1226,17 @@ sub data_iterator
     my ($self, $set, $fields) = @_;
     my $row = 0;
 
-    if (ref $set && UNIVERSAL::isa($set,'UNIVERSAL') &&
+    croak "invalid Tabulate data type '$set'" unless ref $set;
+    if (ref $set eq 'CODE') {
+        return $set;
+    }
+    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('First') && $set->can('Next')) {
         return sub {
           $row = $row ? $set->Next : ($self->{prefetch} || $set->First);
         };
     }
-    elsif (ref $set && UNIVERSAL::isa($set,'UNIVERSAL') &&
+    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('first') && $set->can('next')) {
         return sub {
           $row = $row ? $set->next : ($self->{prefetch} || $set->first);
@@ -1349,7 +1358,13 @@ sub get_dataset
 
     # Fetch the full data set
     my @data = ();
-    if (ref $set && UNIVERSAL::isa($set,'UNIVERSAL') &&
+    croak "invalid Tabulate data type '$set'" unless ref $set;
+    if (ref $set eq 'CODE') {
+        while (my $row = $set->()) {
+            push @data, $row;
+        }
+    }
+    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('First') && $set->can('Next')) {
         my $row = $set->First;
         if (ref $row) {
@@ -1359,7 +1374,7 @@ sub get_dataset
             while ($row = $set->Next);
         }
     }
-    elsif (ref $set && UNIVERSAL::isa($set,'UNIVERSAL') &&
+    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('first') && $set->can('next')) {
         my $row = $set->first;
         if (ref $row) {
@@ -1539,9 +1554,10 @@ for those defined for a specific 'render', which are temporary.
 
 Supported data sets include arrayrefs of arrayrefs (DBI 
 selectall_arrayref, for example), arrayrefs of hashrefs, a simple 
-hashref (producing single row tables), or iterator objects that
+hashref (producing single row tables), iterator objects that
 support first() and next() methods (like DBIx::Recordset objects or 
-Class::DBI iterators). 
+Class::DBI/DBIx::Class iterators), and (as of version 0.31) 
+iterator subroutines returning successive rows in the dataset.
 
 By default arrayref-based datasets are interpreted as containing 
 successive table rows; a column-based interpretation can be forced 
@@ -2276,6 +2292,11 @@ Needs to be completely refactored. Sometime.
 =head1 AUTHOR
 
 Gavin Carr <gavin@openfusion.com.au>
+
+Contributors:
+
+Harry Danilevsky <harry@deerfieldcapital.com> - patch adding generic 
+subref iterator support
 
 
 =head1 COPYRIGHT

@@ -39,6 +39,7 @@ t/t8/across
 t/t8/down
 t/t10/render1
 t/t10/render2
+t/t10/render3
 t/t11/render1
 t/t12/fattrsub1
 t/t12/thtdsub
