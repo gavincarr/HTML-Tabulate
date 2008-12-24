@@ -11,7 +11,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.31';
+$VERSION = '0.32';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -1228,7 +1228,9 @@ sub data_iterator
 
     croak "invalid Tabulate data type '$set'" unless ref $set;
     if (ref $set eq 'CODE') {
-        return $set;
+        return sub {
+          $row = $row ? $set->() : ($self->{prefetch} || $set->());
+        };
     }
     elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
             $set->can('First') && $set->can('Next')) {
@@ -2254,6 +2256,15 @@ Class::DBI and DBIx::Class iterators definitely work; beyond those
 your mileage may vary - please let me know your successes and 
 failures.
 
+As of version 0.31, HTML::Tabulate also supports generic coderef
+iterators i.e. subroutines that return successive data rows on 
+subsequent calls to the subroutine (and undef at end of data)
+e.g.
+
+    # Toy example: given an array of rows in @data
+    $t = HTML::Tabulate->new;
+    print $t->render( sub { shift @data } );
+
 =back
 
 =head1 SUBCLASSING
@@ -2293,10 +2304,14 @@ Needs to be completely refactored. Sometime.
 
 Gavin Carr <gavin@openfusion.com.au>
 
+
 Contributors:
 
+David Giller <dave@pdx.net> reported a bug in the generic subref
+iterator handling, and provided a fix (version 0.32).
+
 Harry Danilevsky <harry@deerfieldcapital.com> - patch adding generic 
-subref iterator support
+subref iterator support (version 0.31).
 
 
 =head1 COPYRIGHT

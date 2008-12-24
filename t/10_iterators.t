@@ -3,7 +3,7 @@
 # uses the mysql 'test' database, if available
 #
 
-use Test::More tests => 5;
+use Test::More tests => 6;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
@@ -132,6 +132,8 @@ SKIP: {
 
 $dbh->disconnect if ref $dbh;
 
+# Code iterators
+$t = HTML::Tabulate->new({ labels => 1, trim => 1, null => '-' });
 my @data = ( 
   [ '123', 'Fred Flintstone', 'CEO' ], 
   [ '456', 'Barney Rubble', 'Lackey' ],
@@ -142,5 +144,18 @@ my $iterator = sub {
   return shift @data;
 };
 my $table = $t->render($iterator, { fields => [ qw(emp_id emp_name emp_title) ] });
-is($table, $result{render3}, "code iterator ok");
+is($table, $result{render3}, "code iterator ok (arrayrefs)");
+
+$t = HTML::Tabulate->new({ labels => 1, trim => 1, null => '-' });
+@data = ( 
+  { emp_id => '123', emp_name => 'Fred Flintstone',     emp_title => 'CEO' }, 
+  { emp_id => '456', emp_name => 'Barney Rubble',       emp_title => 'Lackey' },
+  { emp_id => '789', emp_name => 'Wilma Flintstone   ', emp_title => 'CFO' }, 
+  { emp_id => '777', emp_name => 'Betty Rubble' }, 
+);
+$iterator = sub {
+  return shift @data;
+};
+$table = $t->render($iterator);
+is($table, $result{render3}, "code iterator ok (hashrefs, derived fields)");
 
