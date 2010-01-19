@@ -1071,7 +1071,9 @@ sub cell
         if $tx_code;
 
     # Generate tags
-    return $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr) : $fvalue;
+    my $cell = $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr) : $fvalue;
+    my $skip_count = $tx_attr->{colspan} ? ($tx_attr->{colspan}-1) : 0;
+    return wantarray ? ( $cell, $skip_count ) : $cell;
 }
 
 #
@@ -1205,8 +1207,15 @@ sub row_down
 
     # Render cells
     my @cells = ();
+    my $skip_count = 0;
     for my $f (@{$self->{defn_t}->{fields}}) {
-        push @cells, $self->cell($rownum == 0 ? undef : $row, $f);
+        if ($skip_count > 0) {
+            $skip_count--;
+        }
+        else {
+            (my ($cell), $skip_count) = $self->cell($rownum == 0 ? undef : $row, $f);
+            push @cells, $cell;
+        }
     }
 
     # Build the row
