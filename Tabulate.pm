@@ -1044,7 +1044,7 @@ sub cell_tx_execute
 #
 # Render a single table cell or item
 #
-sub cell 
+sub cell_wantarray
 {
     my ($self, $row, $field, $fattr, $tx_attr, %opts) = @_;
     my $tags = delete $opts{tags};
@@ -1072,8 +1072,19 @@ sub cell
 
     # Generate tags
     my $cell = $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr) : $fvalue;
+    return $cell unless wantarray;
     my $skip_count = $tx_attr->{colspan} ? ($tx_attr->{colspan}-1) : 0;
-    return wantarray ? ( $cell, $skip_count ) : $cell;
+    return ( $cell, $skip_count );
+}
+
+# 
+# Render a single table cell, returning cell and a field skip count
+#
+sub cell
+{
+    my $self = shift;
+    my ($cell, $skip_count) = $self->cell_wantarray(@_);
+    return $cell;
 }
 
 #
@@ -1213,7 +1224,7 @@ sub row_down
             $skip_count--;
         }
         else {
-            (my ($cell), $skip_count) = $self->cell($rownum == 0 ? undef : $row, $f);
+            (my ($cell), $skip_count) = $self->cell_wantarray($rownum == 0 ? undef : $row, $f);
             push @cells, $cell;
         }
     }
