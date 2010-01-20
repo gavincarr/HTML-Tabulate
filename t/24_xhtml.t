@@ -44,10 +44,17 @@ my $d = [
   { id => '777', name => 'Betty Rubble', },
 ];
 my $t = HTML::Tabulate->new({ 
-  fields => [ qw(id givenname surname title) ],
-  td => { nowrap => '' },
+  fields => [ qw(id name title) ],
   labels => {
     id => 'ID',
+  },
+  field_attr => {
+    id => {
+      data_id => '',
+    },
+    name => {
+      nowrap => '',
+    },
   },
 });
 my $table;

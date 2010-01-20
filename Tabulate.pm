@@ -71,6 +71,10 @@ my %FIELD_ATTR = (
     composite => 'ARRAY',
     composite_join => 'SCALAR/CODE',
 );
+my %MINIMISED_ATTR = map { $_ => 1 } qw(
+    checked compact declare defer disabled ismap multiple 
+    nohref noresize noshade nowrap readonly selected 
+);
 my $URI_ESCAPE_CHARS = "^A-Za-z0-9\-_.!~*'()?&;:/=";
 $TITLE_HEADING_LEVEL = 'h2';   # TODO: deprecated
 
@@ -562,9 +566,8 @@ sub prerender_munge
 # Return the given HTML $tag with attributes from the $attr hashref.
 #   An attribute with a non-empty value (i.e. not '' or undef) is rendered
 #   attr="value"; one with a value of '' is rendered as a 'bare' attribute
-#   (i.e. no '=') in non-xhtml mode, and as a 'minimised' attribute (key
-#   and value the same e.g. checked="checked") in xhtml mode; one with undef 
-#   is simply ignored (allowing unset CGI parameters to be ignored).
+#   (i.e. no '=') in non-xhtml mode; one with undef is simply ignored 
+#   (e.g. allowing unset CGI parameters to be ignored).
 #
 sub start_tag
 {
@@ -573,11 +576,17 @@ sub start_tag
     my $str = "<$tag";
     if (ref $attr eq 'HASH') {
         for my $a (sort keys %$attr) {
-            if (defined $attr->{$a} && $attr->{$a} ne '') {
+            next if ! defined $attr->{$a};
+            if ($attr->{$a} ne '') {
                 $str .= qq( $a="$attr->{$a}");
             }
-            elsif (defined $attr->{$a}) {
-                $str .= $xhtml ? qq( $a="$a") : qq( $a);
+            else {
+                if ($MINIMISED_ATTR{$a}) {
+                    $str .= $xhtml ? qq( $a="$a") : qq( $a);
+                }
+                else {
+                    $str .= qq( $a="");
+                }
             }
         }
     }
@@ -1788,9 +1797,9 @@ as table 'columns'.
 =item xhtml
 
 Scalar (boolean). Turns on 'xhtml' mode if true. xhtml mode closes empty 
-elements with a trailing slash (e.g. <br />), and renders empty attributes
-(ones with a value of '') as 'minimised' attributes (key and value both
-present, but the same e.g. 'checked="checked"). Default: 0.
+elements with a trailing slash (e.g. <br />), and renders minimised 
+attributes in HTML (e.g. nowrap, disabled, selected, etc.) in 
+non-minimised (nowrap="nowrap") format. Default: 0.
 
 
 =item labels
