@@ -1,0 +1,133 @@
+------------------------------------------------------------
+revno: 19
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Wed 2010-01-20 10:38:42 +0000
+message:
+  Document 'xhtml' mode, and add an xhtml unit test.
+------------------------------------------------------------
+revno: 18
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Wed 2010-01-20 10:16:46 +0000
+message:
+  Document 'colspan' support.
+------------------------------------------------------------
+revno: 17
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Tue 2010-01-19 19:58:45 +0000
+message:
+  Tweak colspan cell changes to work as before in wantarray contexts.
+------------------------------------------------------------
+revno: 16
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Tue 2010-01-19 19:40:42 +0000
+message:
+  Add first-pass row_down colspan support, and unit tests.
+------------------------------------------------------------
+revno: 15
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Wed 2008-12-24 13:23:46 +1100
+message:
+  Add fix for off-by-one bug in generic subref iterator code (reported by David Giller); bump to 0.32.
+------------------------------------------------------------
+revno: 14
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Thu 2008-10-23 20:49:27 +1100
+message:
+  Add generic subref iterator support (Harry Danilevsky); bump to 0.31.
+------------------------------------------------------------
+revno: 13
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Sat 2008-09-06 20:22:14 +1000
+message:
+  Add some initial perldocs for 'composite' and 'composite_join' for 0.30 release.
+------------------------------------------------------------
+revno: 12
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Fri 2008-08-22 08:46:48 +1000
+message:
+  Tweak tr_attr to pass the full dataset to tr coderefs, if supplied.
+------------------------------------------------------------
+revno: 11
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Tue 2008-08-19 09:29:23 +1000
+message:
+  Add initial tr sub support for across-style tables.
+------------------------------------------------------------
+revno: 10
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Sat 2008-08-16 13:25:28 +1000
+message:
+  Bump VERSION to 0.30, and tweak MANIFEST.
+------------------------------------------------------------
+revno: 9
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Sat 2008-08-16 09:39:22 +1000
+message:
+  Add first-pass composite field support.
+------------------------------------------------------------
+revno: 8
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Sat 2008-08-16 08:55:46 +1000
+message:
+  Tweak comment in 25_data_append.t.
+------------------------------------------------------------
+revno: 7
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Tue 2008-07-08 08:34:47 +1000
+message:
+  Add extra tr id test to t/05_attr.t.
+------------------------------------------------------------
+revno: 6
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Tue 2008-07-08 08:31:21 +1000
+message:
+  Fix problem with intermixed static and subref tx attributes; bump to 0.29.
+------------------------------------------------------------
+revno: 5
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Fri 2008-05-02 07:43:52 +1000
+message:
+  Update MANIFEST for 0.28.
+------------------------------------------------------------
+revno: 4
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Fri 2008-05-02 07:40:15 +1000
+message:
+  Add data_append support; bump to version 0.28.
+------------------------------------------------------------
+revno: 3
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Tue 2008-02-12 16:19:53 +1100
+message:
+  Make dependencies explicit; minor tweaks and cleanups.
+------------------------------------------------------------
+revno: 2
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Sat 2007-09-22 10:22:12 +1000
+message:
+  Fix typo in SYNOPSIS.
+------------------------------------------------------------
+revno: 1
+committer: Gavin Carr <gavin@nox.openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Mon 2007-06-11 08:35:36 +1000
+message:
+  Initial import.
