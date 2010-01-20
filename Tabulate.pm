@@ -562,8 +562,9 @@ sub prerender_munge
 # Return the given HTML $tag with attributes from the $attr hashref.
 #   An attribute with a non-empty value (i.e. not '' or undef) is rendered
 #   attr="value"; one with a value of '' is rendered as a 'bare' attribute
-#   (i.e. no '=') in non-xhtml mode; one with undef is simply ignored 
-#   (allowing unset CGI parameters to be ignored).
+#   (i.e. no '=') in non-xhtml mode, and as a 'minimised' attribute (key
+#   and value the same e.g. checked="checked") in xhtml mode; one with undef 
+#   is simply ignored (allowing unset CGI parameters to be ignored).
 #
 sub start_tag
 {
@@ -576,7 +577,7 @@ sub start_tag
                 $str .= qq( $a="$attr->{$a}");
             }
             elsif (defined $attr->{$a}) {
-                $str .= $xhtml ? qq( $a="") : qq( $a);
+                $str .= $xhtml ? qq( $a="$a") : qq( $a);
             }
         }
     }
@@ -1784,6 +1785,14 @@ Scalar, either 'down' (the default), or 'across', to render data 'rows'
 as table 'columns'.
 
 
+=item xhtml
+
+Scalar (boolean). Turns on 'xhtml' mode if true. xhtml mode closes empty 
+elements with a trailing slash (e.g. <br />), and renders empty attributes
+(ones with a value of '') as 'minimised' attributes (key and value both
+present, but the same e.g. 'checked="checked"). Default: 0.
+
+
 =item labels
 
 Scalar (boolean), or hashref (mapping field keys to label/heading values). 
@@ -2041,7 +2050,7 @@ and define:
     name => {
       colspan => sub {
         my $data = shift;
-        return $data =~ m/^Group/ ? 3 : 1;
+        return $data =~ m/^Group/ ? 3 : undef;
       },
     },
   }

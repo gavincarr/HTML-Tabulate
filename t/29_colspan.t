@@ -66,7 +66,7 @@ $table = $t->render($d, {
       },
       colspan => sub {
         my ($v, $r) = @_;
-        $v =~ m/^Group/ ? 4 : 1;
+        $v =~ m/^Group/ ? 4 : undef;
       },
     },
   },
@@ -87,7 +87,7 @@ $table = $t->render($d, {
       },
       colspan => sub {
         my ($v, $r) = @_;
-        $v =~ m/^Group/ ? 3 : 1;
+        $v =~ m/^Group/ ? 3 : undef;
       },
     },
   },

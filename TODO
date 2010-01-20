@@ -29,8 +29,6 @@
 + add colspan support (at least for row_down tables)
 + document colspan behaviour
 
-- revisit foo => [ bar | '' | undef ] behaviour - for colspan we need a way of saying foo => 'omit'
-
 - add tfoot support
   (tbody, thead, and tfoot are containers that group series of <tr>s - tbody 
    must occur if thead or tfoot are used, and must appear _after_ them; thead 
