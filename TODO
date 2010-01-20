@@ -19,7 +19,6 @@
 + check/revert tr subref support - should probably just be tr elements 
   that can be subrefs, called just with data row (ditto thtr, of course)
 + add tests on tr/td subrefs returning { attribute => undef } to omit attribute
-
 + add support for <caption> (must go immediately after <table>)
 + add thead support
   thead => 1     (around labels; implies tbody ||= 1)
@@ -27,8 +26,12 @@
   tbody => 1     (around all non-label rows)
   tbody => { rows => 3 }
   tbody => { field => 'foobar' }
-- add tfoot support
++ add colspan support (at least for row_down tables)
++ document colspan behaviour
 
+- revisit foo => [ bar | '' | undef ] behaviour - for colspan we need a way of saying foo => 'omit'
+
+- add tfoot support
   (tbody, thead, and tfoot are containers that group series of <tr>s - tbody 
    must occur if thead or tfoot are used, and must appear _after_ them; thead 
    and tfoot can occur only once; tbody can occur multiple times)

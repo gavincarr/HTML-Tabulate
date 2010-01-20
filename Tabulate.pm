@@ -2006,7 +2006,7 @@ as main data rows.
 =item HTML attributes
 
 Any field attribute that does not have a special meaning to HTML::Tabulate
-(see the six remaining items in this section) is considered an HTML attribute
+(see the remaining items in this section) is considered an HTML attribute
 and is used with the <td> tag for table cells for this field. e.g.
 
   field_attr => {
@@ -2030,6 +2030,27 @@ and the result used as the attribute value. The arguments are:
 the (unformatted) data value; a reference to the entire data row; and 
 the field name (so subreferences can be potentially used for more than 
 one field). 
+
+One HTML attribute that is handled specially is B<colspan>. If you set
+colspan to a number greater than one, the cell will be rendered with
+<td colspan="$colspan" ...> (as normal), and the next $colspan-1 fields 
+will be skipped entirely. For instance, if you have a three element table 
+and define:
+
+  field_attr => {
+    name => {
+      colspan => sub {
+        my $data = shift;
+        return $data =~ m/^Group/ ? 3 : 1;
+      },
+    },
+  }
+
+then any rows with names beginning with 'Group' will be rendered:
+
+  <tr><td colspan="3">Group A</td></tr>
+
+Note that 'colspan' is NOT supported with 'across' style tables, however.
 
 =item value
 
@@ -2336,7 +2357,7 @@ subref iterator support (version 0.31).
 
 =head1 COPYRIGHT
 
-Copyright 2003-2008, Gavin Carr.
+Copyright 2003-2010, Gavin Carr.
 
 This program is free software. You may copy or redistribute it under the 
 same terms as perl itself.
