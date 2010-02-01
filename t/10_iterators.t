@@ -3,11 +3,16 @@
 # uses the mysql 'test' database, if available
 #
 
-use Test::More tests => 6;
+use strict;
+use Test::More;
 use HTML::Tabulate;
 use Data::Dumper;
-use strict;
 use FindBin qw($Bin);
+
+plan skip_all => '$ENV{HTML_TABULATE_TEST_DSN} not set - skipping db iterator tests'
+  unless $ENV{HTML_TABULATE_TEST_DSN};
+plan skip_all => 'DBI not installed'
+  unless eval { require DBI };
 
 # Load result strings
 my %result = ();
@@ -37,51 +42,43 @@ my $t = HTML::Tabulate->new({
 
 my $dbh;
 SKIP: {
-  my $tests1 = 2;
-  my $tests2 = 2;
+  my $db_tests = 2;
 
-  eval { require DBI };
-  skip "DBI not installed", $tests1+$tests2 if $@;
-  eval { require DBD::mysql };
-  skip "DBD::mysql not installed", $tests1+$tests2 if $@;
- 
   # Setup test data
-  $dbh = eval { DBI->connect("DBI:mysql:test") };
-  skip "unable to connect to mysql test db", $tests1+$tests2 unless ref $dbh;
-  eval { $dbh->do("drop table if exists emp_tabulate") };
-  eval { $dbh->do(qq(
+  ok($dbh = DBI->connect($ENV{HTML_TABULATE_TEST_DSN}, $ENV{HTML_TABULATE_TEST_USER}, $ENV{HTML_TABULATE_TEST_PASS}), 
+    "connected to db '$ENV{HTML_TABULATE_TEST_DSN}' ok");
+  ok($dbh->do("drop table if exists emp_tabulate"), 'drop table emp_tabulate ok');
+  ok($dbh->do(qq(
     create table emp_tabulate (
       emp_id integer unsigned auto_increment primary key,
       emp_name varchar(255),
       emp_title varchar(255),
       emp_birth_dt date
     )
-  )) };
-  skip "unable to create emp_tabulate test table", $tests1+$tests2 if $@;
-  eval { $dbh->do(qq(
-    insert into emp_tabulate values(123, 'Fred Flintstone', 'CEO', '1971-04-30')
-  )) };
-  skip "emp_tabulate insert1 failed", $tests1+$tests2 if $@;
-  eval { $dbh->do(qq(
-    insert into emp_tabulate values(456, 'Barney Rubble', 'Lackey', '1975-08-04')
-  )) };
-  skip "emp_tabulate insert2 failed", $tests1+$tests2 if $@;
-  eval { $dbh->do(qq(
-    insert into emp_tabulate values(789, 'Dino  ', 'Pet', null)
-  )) };
-  skip "emp_tabulate insert3 failed", $tests1+$tests2 if $@;
+  )), 'create table emp_tabulate ok');
+  ok(eval {
+    $dbh->do(qq(
+      insert into emp_tabulate values(123, 'Fred Flintstone', 'CEO', '1971-04-30')
+    ));
+    $dbh->do(qq(
+      insert into emp_tabulate values(456, 'Barney Rubble', 'Lackey', '1975-08-04')
+    ));
+    $dbh->do(qq(
+      insert into emp_tabulate values(789, 'Dino  ', 'Pet', null)
+    ));
+  }, 'emp_tabulate inserts ok');
 
   # DBIx::Recordset
   SKIP: {
     eval { require DBIx::Recordset };
-    skip "DBIx::Recordset not installed", $tests1 if $@;
+    skip "DBIx::Recordset not installed", $db_tests if $@;
 
     my $set = eval { DBIx::Recordset->SetupObject({
-      '!DataSource' => 'dbi:mysql:test',
+      '!DataSource' => $dbh,
       '!Table' => 'emp_tabulate',
       '!PrimKey' => 'emp_id',
     }) };
-    skip "DBIx::Recordset employee retrieve failed", $tests1 if $@;
+    skip "DBIx::Recordset employee retrieve failed", $db_tests if $@;
     $set->Select;
 
     # Render1
@@ -97,24 +94,22 @@ SKIP: {
 
   SKIP: {
     # Class::DBI setup
-    eval { require Class::DBI };
-    if ($@) {
-      skip "Class::DBI not installed", $tests2;
-    }
-    else {
-      # Define a temp Class::DBI Employee class
-      eval qq(
-        package Employee;
-        use base 'Class::DBI';
-        __PACKAGE__->set_db('Main', 'dbi:mysql:test');
-        __PACKAGE__->table('emp_tabulate');
-        __PACKAGE__->columns(Essential => qw(emp_id emp_name emp_title emp_birth_dt));
-        );
+    eval { require Class::DBI } or skip "Class::DBI not installed", $db_tests;
+    # Define a temp Class::DBI Employee class
+    eval qq(
+      package Employee;
+      use base 'Class::DBI';
+      __PACKAGE__->table('emp_tabulate');
+      __PACKAGE__->columns(Essential => qw(emp_id emp_name emp_title emp_birth_dt));
+    );
+    { 
+      no warnings;
+      *Employee::db_Main = sub { $dbh };
     }
   
     package main;
     my $iter = eval { Employee->retrieve_all };
-    skip "Class::DBI employee retrieve failed", $tests2 if $@;
+    skip "Class::DBI employee retrieve failed: $@", $db_tests if $@;
  
     # Render1
     my $table = $t->render($iter);
@@ -125,6 +120,30 @@ SKIP: {
     $table = $t->render($iter, { style => 'across' });
 #   print $table, "\n";
     is ($table, $result{render2}, "Class::DBI render2 okay");
+  }
+
+  SKIP: {
+    # DBIx::Class setup
+    eval { require DBIx::Class } or skip "DBIx::Class not installed", $db_tests;
+    eval { require DBIx::Class::Schema::Loader } or skip "DBIx::Class::Schema::Loader not installed", $db_tests;
+    DBIx::Class::Schema::Loader::make_schema_at('HTML::Tabulate::Schema', { debug => 0 },
+      [ $ENV{HTML_TABULATE_TEST_DSN}, $ENV{HTML_TABULATE_TEST_USER}, $ENV{HTML_TABULATE_TEST_PASS} ])
+      or skip "Cannot create temp DBIx::Class Schema from database", $db_tests;
+  
+    my $schema = eval { HTML::Tabulate::Schema->connect(sub { $dbh }) }
+      or skip("DBIx::Class schema connect failed: $@", $db_tests);
+    my $iter = $schema->resultset('EmpTabulate')
+      or skip("DBIx::Class employee iterator setup failed: $@", $db_tests);
+ 
+    # Render1
+    my $table = $t->render($iter);
+#   print $table, "\n";
+    is ($table, $result{render1}, "DBIx::Class render1 okay");
+
+    # Render2 (across)
+    $table = $t->render($iter, { style => 'across' });
+#   print $table, "\n";
+    is ($table, $result{render2}, "DBIx::Class render2 okay");
   }
 
   eval { $dbh->do("drop table if exists emp_tabulate") };
@@ -158,4 +177,6 @@ $iterator = sub {
 };
 $table = $t->render($iterator);
 is($table, $result{render3}, "code iterator ok (hashrefs, derived fields)");
+
+done_testing;
 
