@@ -1,4 +1,5 @@
 .bzr
+EXCLUDE
 Makefile.old
 Makefile
 MANIFEST.bak
