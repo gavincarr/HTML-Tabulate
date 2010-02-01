@@ -1,4 +1,25 @@
 ------------------------------------------------------------
+revno: 26
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Mon 2010-02-01 13:00:41 +0000
+message:
+  Add DBIx::Class to 10_iterators.t tests, and update with env-based dsn/user/pass.
+------------------------------------------------------------
+revno: 25
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Mon 2010-02-01 11:41:04 +0000
+message:
+  Use FindBin for finding test results directories.
+------------------------------------------------------------
+revno: 24
+committer: Gavin Carr <gavin@openfusion.com.au>
+branch nick: HTML-Tabulate
+timestamp: Mon 2010-02-01 10:50:32 +0000
+message:
+  Updates to Changes, EXCLUDE, MANIFEST, and MANIFEST.SKIP.
+------------------------------------------------------------
 revno: 23
 committer: Gavin Carr <gavin@openfusion.com.au>
 branch nick: HTML-Tabulate
