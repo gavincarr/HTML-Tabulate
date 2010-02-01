@@ -1,13 +1,13 @@
 # Simple dataset handling
 
-use Test::More tests => 8;
-BEGIN { use_ok( HTML::Tabulate ) }
 use strict;
+use Test::More tests => 8;
+use FindBin qw($Bin);
+BEGIN { use_ok( 'HTML::Tabulate' ) }
 
 # Load result strings
-my $test = 't1';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t1";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -50,7 +50,3 @@ $d = [ { emp_id => '123', name => 'Fred Flintstone', title => 'CEO' },
        { emp_id => '777', name => 'Betty Rubble', title => '' }, ];
 is($t->render($d), $result{fbwb}, "nested hashrefs4");
 
-
-
-
-# arch-tag: 7ae7c6d8-938a-4b25-a061-c8bf1700a8b1

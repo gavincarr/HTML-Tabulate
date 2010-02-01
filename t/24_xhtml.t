@@ -7,8 +7,8 @@ use FindBin qw($Bin);
 use strict;
 
 # Load result strings
-my $test = "$Bin/t24";
 my %result = ();
+my $test = "$Bin/t24";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {

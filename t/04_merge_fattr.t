@@ -1,14 +1,14 @@
 # field attribute merge and inheritance testing
 
-use Test::More tests => 5;
-BEGIN { use_ok( HTML::Tabulate ) }
-use Data::Dumper;
 use strict;
+use Test::More tests => 5;
+use Data::Dumper;
+use FindBin qw($Bin);
+BEGIN { use_ok( 'HTML::Tabulate' ) }
 
 # Load result strings
-my $test = 't4';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t4";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -60,8 +60,4 @@ my $table = $t->render($data, {
 });
 # print $table, "\n";
 is($table, $result{render1}, "render1 result ok");
-
-
-
-# arch-tag: f5552bc9-5784-407e-8f14-12bdbe3a20e8
 

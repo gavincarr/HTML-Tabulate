@@ -1,14 +1,14 @@
 # field attribute testing
 
 use Test::More tests => 3;
+use strict;
 use HTML::Tabulate qw(render);
 use Data::Dumper;
-use strict;
+use FindBin qw($Bin);
 
 # Load result strings
-my $test = 't6';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t6";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -144,7 +144,4 @@ $table = $t->render($data, {
 });
 report $table, "render3";
 is($table, $result{render3}, "render3 result ok");
-
-
-# arch-tag: 4571e9c8-fbae-4494-8357-4fdc862ca827
 

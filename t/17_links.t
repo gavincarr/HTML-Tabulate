@@ -4,11 +4,11 @@ use Test::More tests => 2;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
+use FindBin qw($Bin);
 
 # Load result strings
-my $test = 't17';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t17";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -89,6 +89,3 @@ $table = $t->render($d, {
 report $table, "links2";
 is($table, $result{links2}, "links2");
 
-
-
-# arch-tag: 443639a7-9b51-4b0b-a748-f71173d6fb2d

@@ -4,11 +4,11 @@ use Test::More tests => 15;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
+use FindBin qw($Bin);
 
 # Load result strings
-my $test = 't21';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t21";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -158,5 +158,3 @@ $table = $t->render($d, {
 report $table, "tbody_rows_attr";
 is($table, $result{tbody_rows_attr}, "tbody with -rows with attributes");
 
-
-# arch-tag: 93f6f584-961c-4428-9a16-d9f829d02de5

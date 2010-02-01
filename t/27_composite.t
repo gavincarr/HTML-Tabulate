@@ -1,14 +1,14 @@
 # Composite field testing
 
-use Test::More tests => 2;
+use strict;
+use Test::More;
 use HTML::Tabulate;
 use Data::Dumper;
-use strict;
+use FindBin qw($Bin);
 
 # Load result strings
-my $test = 't27';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t27";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -72,4 +72,5 @@ $table = $t->render($d, {
 report $table, "composite1";
 is($table, $result{composite1}, "simple composite");
 
+done_testing;
 

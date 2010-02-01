@@ -4,11 +4,11 @@ use Test::More tests => 5;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
+use FindBin qw($Bin);
 
 # Load result strings
-my $test = 't20';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t20";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -82,5 +82,3 @@ $table = $t->render($d, {
 report $table, "thead3";
 is($table, $result{thead3}, "thead hashref with attributes");
 
-
-# arch-tag: 6694d598-01d0-40a6-a518-982f0d5246b1

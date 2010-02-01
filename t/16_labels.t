@@ -4,11 +4,11 @@ use Test::More tests => 5;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
+use FindBin qw($Bin);
 
 # Load result strings
-my $test = 't16';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t16";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -106,5 +106,3 @@ $table = $t->render($d, {
 report $table, "empty";
 is($table, $result{empty}, "empty label (hash)");
 
-
-# arch-tag: 76b377b8-0f6e-4e0a-b09c-5e6567faf23c

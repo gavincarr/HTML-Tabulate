@@ -1,14 +1,14 @@
 # presentation defn merge and inheritance testing
 
-use Test::More tests => 23;
-BEGIN { use_ok( HTML::Tabulate ) }
-use Data::Dumper;
 use strict;
+use Test::More tests => 23;
+use Data::Dumper;
+use FindBin qw($Bin);
+BEGIN { use_ok( 'HTML::Tabulate' ) }
 
 # Load result strings
-my $test = 't3';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t3";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -109,8 +109,4 @@ ok(ref $defn->{thtr} && $defn->{thtr}->{class} eq 'merge',
   "defn thtr->class has merged value");
 ok($defn->{labels} == 0, "defn labels has merged value");
 ok($defn->{stripe} eq '#dddddd', "defn stripe has initial value");
-
-
-
-# arch-tag: b4a58258-352e-4312-a7d8-b0302fcab960
 

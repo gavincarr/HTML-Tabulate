@@ -1,14 +1,14 @@
 # style 'across' testing
 
-use Test::More tests => 3;
-BEGIN { use_ok( HTML::Tabulate ) }
-use Data::Dumper;
 use strict;
+use Test::More tests => 3;
+use Data::Dumper;
+use FindBin qw($Bin);
+BEGIN { use_ok( 'HTML::Tabulate' ) }
 
 # Load result strings
-my $test = 't8';
 my %result = ();
-$test = "t/$test" if -d "t/$test";
+my $test = "$Bin/t8";
 die "missing data dir $test" unless -d $test;
 opendir DATADIR, $test or die "can't open directory $test";
 for (readdir DATADIR) {
@@ -48,6 +48,3 @@ $table = $t->render($data, {
 is($table, $result{across}, "result across ok");
 print $table, "\n";
 
-
-
-# arch-tag: f6f27931-76f5-4b30-8af1-ff12d56f3050
