@@ -3,6 +3,7 @@ package HTML::Tabulate;
 use 5.005;
 use Carp;
 use URI::Escape;
+use Scalar::Util qw(blessed);
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $TITLE_HEADING_LEVEL);
 
@@ -11,7 +12,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.35';
+$VERSION = '0.36';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -1488,8 +1489,8 @@ sub render
     my ($self, $set, $defn) = @_;
     $set = {} unless ref $set;
 
-    # If $self is not blessed, this is a procedural call, $self is $set
-    if (ref $self eq 'HASH' || ref $self eq 'ARRAY') {
+    # If $self is not a subclass of HTML::Tabulate, this is a procedural call, $self is $set
+    if (! ref $self || ! blessed $self || ! $self->isa('HTML::Tabulate')) {
       $defn = $set;
       $set = $self;
       $self = __PACKAGE__->new($defn);

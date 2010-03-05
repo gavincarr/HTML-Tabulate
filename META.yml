@@ -20,8 +20,9 @@ no_index:
     - t
 requires:
   Carp: 0
+  Scalar::Util: 0
   URI::Escape: 0
   perl: 5.005
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.33
+version: 0.36
