@@ -12,7 +12,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.36';
+$VERSION = '0.37';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -939,31 +939,38 @@ sub cell_value
     my ($row, $field, $fattr) = @_;
     my $defn = $self->{defn_t};
 
+    # 'value' literal takes precedence over row
+    if (exists $fattr->{value} && ! ref $fattr->{value}) {
+        return defined $fattr->{value} ? $fattr->{value} : '';
+    }
+
     # Get value from $row
     my $value;
     if (ref $row eq 'ARRAY') {
         my $i = keys %{$defn->{field_map}} ? $defn->{field_map}->{$field} : $field;
         $value = $row->[ $i ] if defined $i;
     }
+    # get_column() methods e.g. DBIx::Class
+    elsif (ref $row && eval { $row->can('get_column') }) {
+        $value = eval { $row->get_column($field) };
+    }
     # Allow field-methods e.g. Class::DBI
-    elsif (ref $row && ref $row ne 'HASH' && ref $row ne 'SCALAR' && $row->can($field)) {
+    elsif (ref $row && eval { $row->can($field) }) {
         $value = eval "\$row->$field()";
     }
-    elsif (ref $row && exists $row->{$field}) {
+    # Hash-based rows
+    elsif (ref $row && ref $row eq 'HASH' && exists $row->{$field}) {
         $value = $row->{$field};
     }
-    # 'value' literal or subref takes precedence over row
+
+    # Handle 'value' subref
     if (exists $fattr->{value}) {
         my $ref = ref $fattr->{value};
-        if (! $ref) {
-            # $value = sprintf $fattr->{value}, $value;
-            $value = $fattr->{value};
-        }
-        elsif ($ref eq 'CODE') {
+        if ($ref eq 'CODE') {
             $value = &{$fattr->{value}}($value, $row, $field);
         }
         else {
-            croak "[cell_value] invalid '$field' value: $ref";
+            croak "[cell_value] invalid '$field' value (not scalar or code ref): $ref";
         };
     }
 
