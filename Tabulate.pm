@@ -938,33 +938,35 @@ sub cell_value
     my $self = shift;
     my ($row, $field, $fattr) = @_;
     my $defn = $self->{defn_t};
+    my $value;
 
     # 'value' literal takes precedence over row
     if (exists $fattr->{value} && ! ref $fattr->{value}) {
-        return defined $fattr->{value} ? $fattr->{value} : '';
+        $value = defined $fattr->{value} ? $fattr->{value} : '';
     }
 
     # Get value from $row
-    my $value;
-    if (ref $row eq 'ARRAY') {
-        my $i = keys %{$defn->{field_map}} ? $defn->{field_map}->{$field} : $field;
-        $value = $row->[ $i ] if defined $i;
-    }
-    # get_column() methods e.g. DBIx::Class
-    elsif (ref $row && eval { $row->can('get_column') }) {
-        $value = eval { $row->get_column($field) };
-    }
-    # Allow field-methods e.g. Class::DBI
-    elsif (ref $row && eval { $row->can($field) }) {
-        $value = eval "\$row->$field()";
-    }
-    # Hash-based rows
-    elsif (ref $row && ref $row eq 'HASH' && exists $row->{$field}) {
-        $value = $row->{$field};
+    elsif (ref $row) {
+        if (ref $row eq 'ARRAY') {
+            my $i = keys %{$defn->{field_map}} ? $defn->{field_map}->{$field} : $field;
+            $value = $row->[ $i ] if defined $i;
+        }
+        else {
+            # get_column() methods e.g. DBIx::Class
+            $value = eval { $row->get_column($field) }
+                if eval { $row->can('get_column') };
+            # Allow field-methods e.g. Class::DBI, DBIx::Class
+            $value = eval "\$row->$field()"
+                if ! defined $value && eval { $row->can($field) }
+                     && $field ne 'delete';  # special DBIx::Class protection :-)
+            # Hash-based rows
+            $value = $row->{$field}
+                if ! defined $value && ref $row eq 'HASH' && exists $row->{$field};
+        }
     }
 
     # Handle 'value' subref
-    if (exists $fattr->{value}) {
+    if (exists $fattr->{value} && ref $fattr->{value}) {
         my $ref = ref $fattr->{value};
         if ($ref eq 'CODE') {
             $value = &{$fattr->{value}}($value, $row, $field);
