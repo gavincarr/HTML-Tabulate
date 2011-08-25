@@ -55,6 +55,8 @@ my %VALID_ARG = (
     caption => 'SCALAR/HASH/CODE',
     # data_append: data rows to appended to main dataset
     data_append => 'ARRAY',
+    # colgroups: array of hashrefs to be inserted as individual colgroups
+    colgroups => 'ARRAY',
 );
 my %VALID_FIELDS = (
     -defaults => 'HASH',
@@ -713,6 +715,20 @@ sub caption {
       $self->end_tag('caption')
     )
   }
+}
+
+sub colgroups {
+  my $self = shift;
+  my ($set) = @_;
+  my $defn_t = $self->{defn_t};
+
+  return '' unless $self->{defn_t}->{colgroups};
+
+  my $content = '';
+  for my $cg (@{$self->{defn_t}->{colgroups}}) {
+    $content .= $self->start_tag('colgroup', $cg, 1) . "\n";
+  }
+  return $content;
 }
 
 # ------------------------------------------------------------------------
@@ -1482,6 +1498,7 @@ sub render_table
     $table .= $self->pre_table($set);
     $table .= $self->start_table();
     $table .= $self->caption($set);
+    $table .= $self->colgroups($set);
     $table .= $body;
     $table .= $self->end_table();
     $table .= $self->post_table($set);
@@ -2016,6 +2033,24 @@ For example:
       $caption
     }
   }
+
+=item colgroups
+
+Array reference containing an ordered set of hashrefs to be rendered as 
+individual colgroup entries. Array keys and values are mapped to attributes
+and values on the colgroup entries e.g.
+
+  colgroups => [
+    { align => 'center' },
+    { align => 'left', span => 2 },
+    { align => 'right' },
+  ],
+
+would be rendered as:
+
+  <colgroup align="center">
+  <colgroup align="left" span="2">
+  <colgroup align="right">
 
 
 =item data_append 
