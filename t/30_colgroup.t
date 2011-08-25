@@ -78,5 +78,21 @@ $table = $t->render($d, {
 report $table, "colgroups2";
 is($table, $result{colgroups2}, "colgroups2");
 
+# colgroups with embedded cols
+$table = $t->render($d, {
+  fields => [ qw(id givenname surname title) ],
+  labels => 1,
+  xhtml  => 1,
+  colgroups => [
+    { align => 'center' },
+    { align => 'left', cols => [
+      { class => 'col1', span => '2' },
+      { id => 'col2', width => 20 },
+    ] },
+  ],
+});
+report $table, "colgroups3";
+is($table, $result{colgroups3}, "colgroups3");
+
 done_testing;
 

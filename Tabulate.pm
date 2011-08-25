@@ -726,7 +726,17 @@ sub colgroups {
 
   my $content = '';
   for my $cg (@{$self->{defn_t}->{colgroups}}) {
-    $content .= $self->start_tag('colgroup', $cg, 1) . "\n";
+    if ($cg->{cols} && ref $cg->{cols} && ref $cg->{cols} eq 'ARRAY') {
+        my $cols = delete $cg->{cols};
+        $content .= $self->start_tag('colgroup', $cg, 0) . "\n";
+        for my $col (@$cols) {
+            $content .= $self->start_tag('col', $col, 1) . "\n";
+        }
+        $content .= $self->end_tag('colgroup') . "\n";
+    }
+    else {
+        $content .= $self->start_tag('colgroup', $cg, 1) . "\n";
+    }
   }
   return $content;
 }
@@ -2034,7 +2044,8 @@ For example:
     }
   }
 
-=item colgroups
+
+=item colgroups and cols
 
 Array reference containing an ordered set of hashrefs to be rendered as 
 individual colgroup entries. Array keys and values are mapped to attributes
@@ -2051,6 +2062,27 @@ would be rendered as:
   <colgroup align="center">
   <colgroup align="left" span="2">
   <colgroup align="right">
+
+A colgroup can also contain the special attribute B<cols>, which defines a
+similar array reference containing a set of hashrefs, which are rendered
+as <col> items nested within the colgroup (as an alternative to using 'span').
+For example, this:
+
+  colgroups => [
+    { align => 'center' },
+    { align => 'left', cols => [
+      { class => 'col1', span => '2' },
+      { class => 'col2', width => 20 },
+    ] },
+  ],
+
+would be rendered as:
+
+    <colgroup align="center">
+    <colgroup align="left">
+    <col class="col1" span="2">
+    <col class="col2" width="20">
+    </colgroup>
 
 
 =item data_append 
