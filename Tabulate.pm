@@ -1294,27 +1294,32 @@ sub tr_attr
 #
 sub row_down 
 {
-    my ($self, $row, $rownum) = @_;
+    my ($self, $row, $rownum, %args) = @_;
+    my $fields = delete $args{fields};
+    $fields ||= $self->{defn_t}->{fields};
+
+    # Open tr
+    my $out = '';
+    $out .= $self->start_tag('tr', $self->tr_attr($rownum, $row));
 
     # Render cells
     my @cells = ();
     my $skip_count = 0;
-    for my $f (@{$self->{defn_t}->{fields}}) {
+    for my $f (@$fields) {
         if ($skip_count > 0) {
             $skip_count--;
             next;
         }
 
-        my @row = $row ? ( row => $row ) : ();
-        push @cells, $self->cell_single(@row, field => $f, skip_count => \$skip_count);
+        if (! $row) {
+            $out .= $self->cell_single(field => $f, skip_count => \$skip_count);
+        }
+        else {
+            $out .= $self->cell_single(row => $row, field => $f, skip_count => \$skip_count);
+        }
     }
 
-    # Build the row
-    my $out = '';
-    $out .= $self->start_tag('tr', $self->tr_attr($rownum, $row));
-    $out .= join('',@cells);
-    $out .= $self->end_tag('tr');
-    $out .= "\n";
+    $out .= $self->end_tag('tr') . "\n";
     return $out;
 }
 
