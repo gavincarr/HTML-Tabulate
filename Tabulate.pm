@@ -57,6 +57,8 @@ my %VALID_ARG = (
     data_append => 'ARRAY',
     # colgroups: array of hashrefs to be inserted as individual colgroups
     colgroups => 'ARRAY',
+    # labelgroups: named groupings of labels used to create two-tier headers
+    labelgroups => 'HASH',
 );
 my %VALID_FIELDS = (
     -defaults => 'HASH',
@@ -562,6 +564,72 @@ sub prerender_munge
         }
     }
 
+}
+
+# Split fields up according to labelgroups into two field lists
+# labelgroup entries look like LabelGroup => [ qw(field1 field2 field3) ]
+sub labelgroup_fields
+{
+    my $self = shift;
+
+    my @fields = @{$self->{defn_t}->{fields}};
+    my $labelgroups = $self->{defn_t}->{labelgroups};
+
+    # Map first field of each labelgroup into a hash
+    my %grouped_fields;
+    for my $label (keys %$labelgroups) {
+        my $field1 = $labelgroups->{$label}->[0];
+        $grouped_fields{ $field1 } = $label;
+    }
+
+    # Process all fields looking for label groups, and splitting out if found
+    my (@fields1, @fields2);
+    while (my $f = shift @fields) {
+        if (my $label = $grouped_fields{ $f }) {
+            # Found a grouped label - splice labelled fields into fields2
+            my @gfields = @{ $labelgroups->{$label} };
+            shift @gfields;  # discard $f
+
+            # Check all fields match
+            my @next_group;
+            while (my $g = shift @gfields) {
+                my $fn = shift @fields;
+                push @next_group, $fn if $fn eq $g;
+            }
+
+            # If we have as many as we're expecting, we're good
+            if (@next_group == @{ $labelgroups->{$label} } - 1) {
+                push @fields2, $f, @next_group;
+                push @fields1, $label;
+            }
+            # Otherwise our field list doesn't exactly match the label group - omit
+            else {
+                push @fields1, $f;
+                # Push @next_group back into @fields for reprocessing
+                unshift @fields, @next_group;
+            }
+        }
+
+        # Not a labelgroup
+        else {
+            push @fields1, $f;
+        }
+    }
+
+    # Setup $field1_tx_attr map if we have any @fields2 fields
+    my $field1_tx_attr = {};
+    if (@fields2) {
+        for my $f (@fields1) {
+            if (my $grouped_fields = $labelgroups->{$f}) {
+                $field1_tx_attr->{$f} = { colspan => scalar(@$grouped_fields) };
+            }
+            else {
+                $field1_tx_attr->{$f} = { rowspan => 2 };
+            }
+        }
+    }
+
+    return (\@fields1, \@fields2, $field1_tx_attr);
 }
 
 # -------------------------------------------------------------------------
@@ -1093,12 +1161,13 @@ sub cell_tx_execute
 sub cell_single
 {
     my ($self, %args) = @_;
-    my $row        = delete $args{row};
-    my $field      = delete $args{field};
-    my $fattr      = delete $args{field_attr};
-    my $tx_attr    = delete $args{tx_attr};
-    my $skip_count = delete $args{skip_count};
-    my $tags       = delete $args{tags};
+    my $row             = delete $args{row};
+    my $field           = delete $args{field};
+    my $fattr           = delete $args{field_attr};
+    my $tx_attr         = delete $args{tx_attr};
+    my $tx_attr_extra   = delete $args{tx_attr_extra};
+    my $skip_count      = delete $args{skip_count};
+    my $tags            = delete $args{tags};
     $tags = 1 unless defined $tags;
     die "Unknown arguments to cell_single: " . join(',', keys %args) if %args;
 
@@ -1118,12 +1187,16 @@ sub cell_single
     # Standard (non-composite) fields
     my ($fvalue, $value) = $self->cell_content($row, $field, $fattr);
 
-    # If $tx_addr includes coderefs, execute them
+    # If $tx_attr includes coderefs, execute them
     $tx_attr = $self->cell_tx_execute($tx_attr, $value, $row, $field) 
         if $tx_code;
 
+    my $tx_attr_merged = $tx_attr;
+    $tx_attr_merged = { %$tx_attr, %{$tx_attr_extra->{$field}} }
+        if $tx_attr_extra && $tx_attr_extra->{$field};
+
     # Generate tags
-    my $cell = $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr) : $fvalue;
+    my $cell = $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr_merged) : $fvalue;
 
     $$skip_count = $tx_attr->{colspan} ? ($tx_attr->{colspan}-1) : 0
         if $skip_count && ref $skip_count && ref $skip_count eq 'SCALAR';
@@ -1297,6 +1370,8 @@ sub row_down
     my ($self, $row, $rownum, %args) = @_;
     my $fields = delete $args{fields};
     $fields ||= $self->{defn_t}->{fields};
+    my $tx_attr_extra = delete $args{tx_attr_extra};
+    my %tx_attr_extra = $tx_attr_extra ? ( tx_attr_extra => $tx_attr_extra ) : ();
 
     # Open tr
     my $out = '';
@@ -1312,10 +1387,10 @@ sub row_down
         }
 
         if (! $row) {
-            $out .= $self->cell_single(field => $f, skip_count => \$skip_count);
+            $out .= $self->cell_single(field => $f, skip_count => \$skip_count, %tx_attr_extra);
         }
         else {
-            $out .= $self->cell_single(row => $row, field => $f, skip_count => \$skip_count);
+            $out .= $self->cell_single(row => $row, field => $f, skip_count => \$skip_count, , %tx_attr_extra);
         }
     }
 
@@ -1396,7 +1471,16 @@ sub body_down
     if ($self->{defn_t}->{labels} && @fields) {
         $body .= $self->start_tag('thead', $self->{defn_t}->{thead}) . "\n" 
             if $self->{defn_t}->{thead};
-        $body .= $self->row_down(undef, 0);
+
+        if ($self->{defn_t}->{labelgroups}) {
+            my ($fields1, $fields2, $field1_tx_attr) = $self->labelgroup_fields;
+            $body .= $self->row_down(undef, 0, fields => $fields1, tx_attr_extra => $field1_tx_attr);
+            $body .= $self->row_down(undef, 0, fields => $fields2) if @$fields2;
+        }
+        else {
+            $body .= $self->row_down(undef, 0);
+        }
+
         if ($self->{defn_t}->{thead}) {
           $body .= $self->end_tag('thead') . "\n";
           $self->{defn_t}->{thead} = 0;
