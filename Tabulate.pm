@@ -1090,11 +1090,17 @@ sub cell_tx_execute
 #
 # Render a single table cell or item
 #
-sub cell_wantarray
+sub cell_single
 {
-    my ($self, $row, $field, $fattr, $tx_attr, %opts) = @_;
-    my $tags = delete $opts{tags};
+    my ($self, %args) = @_;
+    my $row        = delete $args{row};
+    my $field      = delete $args{field};
+    my $fattr      = delete $args{field_attr};
+    my $tx_attr    = delete $args{tx_attr};
+    my $skip_count = delete $args{skip_count};
+    my $tags       = delete $args{tags};
     $tags = 1 unless defined $tags;
+    die "Unknown arguments to cell_single: " . join(',', keys %args) if %args;
 
     # Merge default and field attributes first time through (labels + data)
     my $tx_code = 0;
@@ -1118,19 +1124,47 @@ sub cell_wantarray
 
     # Generate tags
     my $cell = $tags ? $self->cell_tags($fvalue, $row, $field, $tx_attr) : $fvalue;
-    return $cell unless wantarray;
-    my $skip_count = $tx_attr->{colspan} ? ($tx_attr->{colspan}-1) : 0;
-    return ( $cell, $skip_count );
+
+    $$skip_count = $tx_attr->{colspan} ? ($tx_attr->{colspan}-1) : 0
+        if $skip_count && ref $skip_count && ref $skip_count eq 'SCALAR';
+
+    return $cell;
+}
+
+#
+# Legacy interface (deprecated)
+#
+sub cell_wantarray
+{
+    my ($self, $row, $field, $fattr, $tx_attr, %opts) = @_;
+
+    my $skip_count;
+    my $cell = $self->cell_single(
+        %opts,
+        row => $row,
+        field => $field,
+        field_attr => $fattr,
+        tx_attr => $tx_attr,
+        skip_count => \$skip_count,
+    );
+
+    return ($cell, $skip_count);
 }
 
 # 
-# Render a single table cell, returning cell and a field skip count
+# Render a single table cell (legacy interface)
 #
 sub cell
 {
-    my $self = shift;
-    my ($cell, $skip_count) = $self->cell_wantarray(@_);
-    return $cell;
+    my ($self, $row, $field, $fattr, $tx_attr, %opts) = @_;
+
+    $self->cell_single(
+        %opts,
+        row => $row,
+        field => $field,
+        field_attr => $fattr,
+        tx_attr => $tx_attr,
+    );
 }
 
 #
@@ -1268,11 +1302,11 @@ sub row_down
     for my $f (@{$self->{defn_t}->{fields}}) {
         if ($skip_count > 0) {
             $skip_count--;
+            next;
         }
-        else {
-            (my ($cell), $skip_count) = $self->cell_wantarray($rownum == 0 ? undef : $row, $f);
-            push @cells, $cell;
-        }
+
+        my @row = $row ? ( row => $row ) : ();
+        push @cells, $self->cell_single(@row, field => $f, skip_count => \$skip_count);
     }
 
     # Build the row
