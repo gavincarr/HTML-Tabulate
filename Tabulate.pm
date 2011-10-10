@@ -59,6 +59,8 @@ my %VALID_ARG = (
     colgroups => 'ARRAY',
     # labelgroups: named groupings of labels used to create two-tier headers
     labelgroups => 'HASH',
+    # derived: fields not present in the underlying data, to skip unnecessary lookups
+    derived => 'ARRAY',
 );
 my %VALID_FIELDS = (
     -defaults => 'HASH',
@@ -75,6 +77,7 @@ my %FIELD_ATTR = (
     default => 'SCALAR',
     composite => 'ARRAY',
     composite_join => 'SCALAR/CODE',
+    derived => 'SCALAR',
 );
 my %MINIMISED_ATTR = map { $_ => 1 } qw(
     checked compact declare defer disabled ismap multiple 
@@ -509,6 +512,13 @@ sub prerender_munge
         for (keys %{$defn_t->{label_links}}) {
             $defn_t->{field_attr}->{$_} ||= {};
             $defn_t->{field_attr}->{$_}->{label_link} = $defn_t->{label_links}->{$_};
+        }
+    }
+
+    # Map top-level 'derived' field list into fields
+    if ($defn_t->{derived}) {
+        for (@{ $defn_t->{derived} }) {
+            $defn_t->{field_attr}->{$_}->{derived} = 1;
         }
     }
 
@@ -1039,8 +1049,8 @@ sub cell_value
         $value = defined $fattr->{value} ? $fattr->{value} : '';
     }
 
-    # Get value from $row
-    elsif (ref $row) {
+    # Get value from $row (but skip 'derived' fields)
+    elsif (ref $row && ! $fattr->{derived}) {
         if (ref $row eq 'ARRAY') {
             my $i = keys %{$defn->{field_map}} ? $defn->{field_map}->{$field} : $field;
             $value = $row->[ $i ] if defined $i;
@@ -1948,6 +1958,16 @@ different to the output order defined in 'fields' above. e.g.
 Using in_fields only makes sense if the dataset rows are arrayrefs. 
 
 
+=item derived
+
+Arrayref. Defines fields that are not present in the underlying data,
+to avoid unnecessary lookups. (You are presumably deriving these values
+from other data in the row via a 'value' sub or something.)
+
+Can also be set as a derived flag in per-field field_attr sections, if
+you prefer.
+
+
 =item style
 
 Scalar, either 'down' (the default), or 'across', to render data 'rows'
@@ -2398,6 +2418,17 @@ Boolean (default true). HTML-escapes '<' and '>' characters in data
 values.
 
 
+=item derived
+
+Boolean (default false). Flag indicating that this is a derived field
+i.e. not present in the underlying data, allowing HTML::Tabulate to
+avoid unnecessary lookups. (You are presumably deriving these values
+from other data in the row via a 'value' sub or something.)
+
+Can also be set in a top-level 'derived' arrayref, rather than per-field,
+if you prefer.
+
+
 =item composite
 
 Arrayref. New as of version 0.30, composite fields define an ordered 
@@ -2575,7 +2606,7 @@ subref iterator support (version 0.31).
 
 =head1 COPYRIGHT
 
-Copyright 2003-2010, Gavin Carr.
+Copyright 2003-2011, Gavin Carr.
 
 This program is free software. You may copy or redistribute it under the 
 same terms as perl itself.
