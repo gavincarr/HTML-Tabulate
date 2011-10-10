@@ -51,7 +51,7 @@ and Exporter modules; the test framework uses Test::More.
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2003 Gavin Carr
+Copyright (C) 2003-2011 Gavin Carr
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself. 
