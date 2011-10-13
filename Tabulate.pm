@@ -53,7 +53,9 @@ my %VALID_ARG = (
     text => 'SCALAR/HASH/CODE',
     # caption: text to be rendered below table
     caption => 'SCALAR/HASH/CODE',
-    # data_append: data rows to appended to main dataset
+    # data_prepend: data rows to be inserted before main dataset
+    data_prepend => 'ARRAY',
+    # data_append: data rows to be appended to main dataset
     data_append => 'ARRAY',
     # colgroups: array of hashrefs to be inserted as individual colgroups
     colgroups => 'ARRAY',
@@ -1476,6 +1478,7 @@ sub body_down
     my @fields = @{$self->{defn_t}->{fields}} 
         if ref $self->{defn_t}->{fields} eq 'ARRAY';
     my $data_next = $self->data_iterator($set, \@fields);
+    my $data_prepend = $self->{defn_t}->{data_prepend};
 
     # Labels/headings
     if ($self->{defn_t}->{labels} && @fields) {
@@ -1498,7 +1501,7 @@ sub body_down
     }
     elsif ($self->{defn_t}->{thead}) {
         # If thead set and labels isn't, use the first data row
-        my $row = $data_next->();
+        my $row = $data_prepend && @$data_prepend ? shift @$data_prepend : $data_next->();
         if ($row) {
             $body .= $self->start_tag('thead', $self->{defn_t}->{thead}) . "\n";
             $body .= $self->row_down($row, 1);
@@ -1508,6 +1511,13 @@ sub body_down
 
     # Table body
     my $rownum = 1;
+    if ($data_prepend && @$data_prepend) {
+        for my $row (@$data_prepend) {
+            $body .= $self->tbody($row, $rownum);
+            $body .= $self->row_down($row, $rownum);
+            $rownum++;
+        } 
+    }
     while (my $row = $data_next->()) {
         $body .= $self->tbody($row, $rownum);
         $body .= $self->row_down($row, $rownum);
@@ -2228,11 +2238,21 @@ would be rendered as:
     </colgroup>
 
 
+=item data_prepend 
+
+Array reference containing supplementary data rows to be prepended to the table
+before the main dataset. data_prepend rows are otherwise treated exactly the
+same as main data rows.
+
+Note that data_prepend is currently only supported for style => 'down'.
+
 =item data_append 
 
 Array reference containing supplementary data rows to be appended to the table
-after the main dataset. data_append rows are currently treated exactly the same 
+after the main dataset. data_append rows are otherwise treated exactly the same 
 as main data rows.
+
+Note that data_append is currently only supported for style => 'down'.
 
 =back
 

@@ -1,4 +1,4 @@
-# Data append testing
+# Data prepend testing
 
 use strict;
 use Test::More tests => 6;
@@ -8,7 +8,7 @@ use FindBin qw($Bin);
 
 # Load result strings
 my %result = ();
-my $test = "$Bin/t25";
+my $test = "$Bin/t26";
 die "missing data dir $test" unless -d $test;
 opendir my $datadir, $test or die "can't open directory $test";
 for (readdir $datadir) {
@@ -48,50 +48,50 @@ my $t = HTML::Tabulate->new({
   fields_omit => [ qw(emp_gender emp_xx) ],
 });
 my $table;
-my @append;
+my @prepend;
 
-# No data_append
+# No data_prepend
 $table = $t->render($d);
 report $table, "simple1";
-is($table, $result{simple1}, "no data_append");
+is($table, $result{simple1}, "no data_prepend");
 
-# Empty data_append
+# Empty data_prepend
 $table = $t->render($d, {
-  data_append => [],
+  data_prepend => [],
 });
 report $table, "simple1";
-is($table, $result{simple1}, "empty data_append");
+is($table, $result{simple1}, "empty data_prepend");
 
-# Single-row data_append
-@append = ( pop @$d );
+# Single-row data_prepend
+@prepend = ( shift @$d );
 $table = $t->render($d, {
-  data_append => \@append,
+  data_prepend => \@prepend,
 });
 report $table, "simple1";
-is($table, $result{simple1}, "single-row data_append");
+is($table, $result{simple1}, "single-row data_prepend");
 
-# Multi-row data_append
-unshift @append, pop @$d;
-unshift @append, pop @$d;
-is(scalar @append, 3, "three rows to data_append");
+# Multi-row data_prepend
+push @prepend, shift @$d;
+push @prepend, shift @$d;
+is(scalar @prepend, 3, "three rows to data_prepend");
 $table = $t->render($d, {
-  data_append => \@append,
+  data_prepend => \@prepend,
 });
 report $table, "simple1";
-is($table, $result{simple1}, "multi-row data_append");
+is($table, $result{simple1}, "multi-row data_prepend");
 
-# Hashref rows in data_append
-my @append2 = ();
-for my $row (@append) {
+# Hashref rows in data_prepend
+my @prepend2 = ();
+for my $row (@prepend) {
   my $new_row = {};
   for (qw(emp_id emp_name emp_title emp_gender emp_xx)) {
     $new_row->{$_} = shift @$row;
   }
-  push @append2, $new_row;
+  push @prepend2, $new_row;
 }
 $table = $t->render($d, {
-  data_append => \@append2,
+  data_prepend => \@prepend2,
 });
 report $table, "simple1";
-is($table, $result{simple1}, "multi-row hashref data_append");
+is($table, $result{simple1}, "multi-row hashref data_prepend");
 
