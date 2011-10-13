@@ -1,8 +1,13 @@
 ChangeLog
 ---------
 
+[2011-10-14]
+* Bump $VERSION to 0.38.
+* Add initial data_prepend support to Tabulate.
+
 [2011-10-10]
-* Bump version to 0.37.
+* Update Copyright details in README.
+* Update Changes file for 0.37 release.
 * Add support for a 'derived' fields arrayref and field_attr flag.
 
 [2011-08-26]
@@ -76,4 +81,6 @@ ChangeLog
 
 [2007-09-22]
 * Fix typo in SYNOPSIS.
+
+[2007-06-11]
 
