@@ -921,26 +921,25 @@ sub cell_format
     my $defn = $self->{defn_t};
 
     # Trim
-    $data =~ s/^\s*(.*?)\s*$/$1/ if $defn->{trim};
+    $data =~ s/^\s*(.*?)\s*$/$1/ if $data ne '' && $defn->{trim};
 
-    if ($data ne '') {
-        my $data_unformatted = $data;
+    my $data_unformatted = $data;
 
-        # 'escape' boolean for simple tag escaping (defaults to on)
-        $data = $self->cell_format_escape($data) 
-            if $fattr->{escape} || ! exists $fattr->{escape};
+    # 'escape' boolean for simple tag escaping (defaults to on)
+    $data = $self->cell_format_escape($data)
+        if $data ne '' && ($fattr->{escape} || ! exists $fattr->{escape});
 
-        # 'format' subroutine or sprintf pattern
-        $data = $self->cell_format_format(@_) 
-            if $fattr->{format};
+    # 'format' subroutine or sprintf pattern
+    $data = $self->cell_format_format(@_)
+        if $fattr->{format};
 
-        # 'link' subroutine or sprintf pattern
-        $data = $self->cell_format_link($data, $fattr, $row, $field, $data_unformatted)
-            if $fattr->{link};
-    }
+    # 'link' subroutine or sprintf pattern
+    $data = $self->cell_format_link($data, $fattr, $row, $field, $data_unformatted)
+        if $data ne '' && $fattr->{link};
 
     # 'null' defaults
-    $data = $defn->{null} if defined $defn->{null} && $data eq '';
+    $data = $defn->{null}
+        if defined $defn->{null} && $data eq '';
 
     return $data;
 }
