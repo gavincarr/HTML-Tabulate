@@ -976,13 +976,34 @@ sub cell_merge_extras
 }
 
 #
+# Split field attr data into label, tfoot, and data buckets
+sub cell_split_label_tfoot_data {
+    my ($self, $fattr, $field) = @_;
+
+    $self->{defn_t}->{label_attr}->{$field} ||= {};
+    $self->{defn_t}->{data_attr}->{$field}  ||= {};
+    $self->{defn_t}->{tfoot_attr}->{$field} ||= {};
+
+    for (keys %$fattr) {
+        if (substr($_,0,6) eq 'label_') {
+            $self->{defn_t}->{label_attr}->{$field}->{substr($_,6)} = $fattr->{$_};
+        }
+        elsif (substr($_,0,6) eq 'tfoot_') {
+            $self->{defn_t}->{tfoot_attr}->{$field}->{substr($_,6)} = $fattr->{$_};
+        }
+        else {
+            $self->{defn_t}->{data_attr}->{$field}->{$_} = $fattr->{$_};
+        }
+    }
+    $self->{defn_t}->{label_attr}->{$field}->{value} = $self->label(delete $fattr->{label}, $field);
+}
+
+#
 # Merge default and field attributes once each per-field for labels and data
 #
 sub cell_merge_defaults
 {
     my ($self, $row, $field) = @_;
-    $self->{defn_t}->{field_attr}->{$field} ||= {};
-    $self->{defn_t}->{tfoot_attr}->{$field} ||= {};
 
     # Create a temp $fattr hash merging defaults, regexes, and field attrs
     my $fattr = { %{$self->{defn_t}->{field_attr}->{-defaults}},
@@ -996,7 +1017,7 @@ sub cell_merge_defaults
         values %{$self->{defn_t}->{field_attr}->{$field}};
    
     # For labels, keep only label_ attributes
-    if (! defined $row) {
+    if (0 && ! defined $row) {
         my $fattr_l = {};
         for (keys %$fattr) {
             next if substr($_,0,6) ne 'label_';
@@ -1009,18 +1030,15 @@ sub cell_merge_defaults
         $fattr = $fattr_l;
     }
 
-    # For data rows, discard all label_ attributes
+    # Split out label, data, and tfoot attributes
+    $self->cell_split_label_tfoot_data($fattr, $field)
+        if ! $self->{defn_t}->{data_attr}->{$field};
+
+    if (! defined $row) {
+        $fattr = $self->{defn_t}->{label_attr}->{$field};
+    }
     else {
-        for (keys %$fattr) {
-            # Discard all label_ attributes
-            if (substr($_,0,6) eq 'label_') {
-              delete $fattr->{$_};
-            }
-            # Move all tfoot_ attributes to tfoot_attr
-            elsif (substr($_,0,6) eq 'tfoot_') {
-              $self->{defn_t}->{tfoot_attr}->{substr($_,6)} = delete $fattr->{$_};
-            }
-        }
+        $fattr = $self->{defn_t}->{data_attr}->{$field};
     }
 
     # Create tx_attr by removing all $fattr attributes in $field_attr
