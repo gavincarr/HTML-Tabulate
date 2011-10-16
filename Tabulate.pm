@@ -981,8 +981,8 @@ sub cell_split_label_tfoot_data {
     my ($self, $fattr, $field) = @_;
 
     $self->{defn_t}->{label_attr}->{$field} ||= {};
-    $self->{defn_t}->{data_attr}->{$field}  ||= {};
     $self->{defn_t}->{tfoot_attr}->{$field} ||= {};
+    $self->{defn_t}->{data_attr}->{$field}  ||= {};
 
     for (keys %$fattr) {
         if (substr($_,0,6) eq 'label_') {
@@ -1005,6 +1005,8 @@ sub cell_merge_defaults
 {
     my ($self, $row, $field) = @_;
 
+    return if $self->{defn_t}->{data_attr}->{$field};
+
     # Create a temp $fattr hash merging defaults, regexes, and field attrs
     my $fattr = { %{$self->{defn_t}->{field_attr}->{-defaults}},
                   $self->cell_merge_extras($row, $field) };
@@ -1017,8 +1019,7 @@ sub cell_merge_defaults
         values %{$self->{defn_t}->{field_attr}->{$field}};
    
     # Split out label, data, and tfoot attributes
-    $self->cell_split_label_tfoot_data($fattr, $field)
-        if ! $self->{defn_t}->{data_attr}->{$field};
+    $self->cell_split_label_tfoot_data($fattr, $field);
 
     # Create tx_attr by removing all $fattr attributes in $field_attr
     for my $attr (qw(label_attr tfoot_attr data_attr)) {
