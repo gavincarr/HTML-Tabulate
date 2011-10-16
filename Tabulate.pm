@@ -999,6 +999,25 @@ sub cell_split_label_tfoot_data {
 }
 
 #
+# Create tx_attr for each attr bucket by removing attributes in $field_attr
+#
+sub cell_split_out_tx_attr {
+    my ($self, $field) = @_;
+
+    for my $attr (qw(label_attr tfoot_attr data_attr)) {
+        my %tx_attr = %{ $self->{defn_t}->{$attr}->{$field} };
+        my $tx_code = 0;
+        for (keys %tx_attr) { 
+            delete $tx_attr{$_} if exists $self->{field_attr}->{$_};
+            delete $tx_attr{$_} if m/^link_/;
+            $tx_code = 1 if ref $tx_attr{$_} eq 'CODE';
+        }
+        $self->{defn_t}->{$attr}->{$field}->{tx_attr} = \%tx_attr;
+        $self->{defn_t}->{$attr}->{$field}->{tx_code} = $tx_code;
+    }
+}
+
+#
 # Merge default and field attributes once each per-field for labels and data
 #
 sub cell_merge_defaults
@@ -1021,18 +1040,8 @@ sub cell_merge_defaults
     # Split out label, data, and tfoot attributes
     $self->cell_split_label_tfoot_data($fattr, $field);
 
-    # Create tx_attr by removing all $fattr attributes in $field_attr
-    for my $attr (qw(label_attr tfoot_attr data_attr)) {
-        my %tx_attr = %{ $self->{defn_t}->{$attr}->{$field} };
-        my $tx_code = 0;
-        for (keys %tx_attr) { 
-            delete $tx_attr{$_} if exists $self->{field_attr}->{$_};
-            delete $tx_attr{$_} if m/^link_/;
-            $tx_code = 1 if ref $tx_attr{$_} eq 'CODE';
-        }
-        $self->{defn_t}->{$attr}->{$field}->{tx_attr} = \%tx_attr;
-        $self->{defn_t}->{$attr}->{$field}->{tx_code} = $tx_code;
-    }
+    # Remove tx_attr for label, data, and tfoot attr buckets
+    $self->cell_split_out_tx_attr($field);
 }
 
 #
