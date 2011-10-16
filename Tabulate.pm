@@ -1016,55 +1016,22 @@ sub cell_merge_defaults
     @$fattr{ keys %{$self->{defn_t}->{field_attr}->{$field}} } = 
         values %{$self->{defn_t}->{field_attr}->{$field}};
    
-    # For labels, keep only label_ attributes
-    if (0 && ! defined $row) {
-        my $fattr_l = {};
-        for (keys %$fattr) {
-            next if substr($_,0,6) ne 'label_';
-            $fattr_l->{substr($_,6)} = $fattr->{$_};
-        }
-
-        # Set 'value' from 'label'
-        $fattr_l->{value} = $self->label($fattr->{label}, $field);
-        # Update fattr
-        $fattr = $fattr_l;
-    }
-
     # Split out label, data, and tfoot attributes
     $self->cell_split_label_tfoot_data($fattr, $field)
         if ! $self->{defn_t}->{data_attr}->{$field};
 
-    if (! defined $row) {
-        $fattr = $self->{defn_t}->{label_attr}->{$field};
-    }
-    else {
-        $fattr = $self->{defn_t}->{data_attr}->{$field};
-    }
-
     # Create tx_attr by removing all $fattr attributes in $field_attr
-    my %tx_attr = %$fattr;
-    for (keys %tx_attr) { 
-      delete $tx_attr{$_} if exists $self->{field_attr}->{$_};
-      delete $tx_attr{$_} if m/^link_/;
+    for my $attr (qw(label_attr tfoot_attr data_attr)) {
+        my %tx_attr = %{ $self->{defn_t}->{$attr}->{$field} };
+        my $tx_code = 0;
+        for (keys %tx_attr) { 
+            delete $tx_attr{$_} if exists $self->{field_attr}->{$_};
+            delete $tx_attr{$_} if m/^link_/;
+            $tx_code = 1 if ref $tx_attr{$_} eq 'CODE';
+        }
+        $self->{defn_t}->{$attr}->{$field}->{tx_attr} = \%tx_attr;
+        $self->{defn_t}->{$attr}->{$field}->{tx_code} = $tx_code;
     }
-
-    # If data, save for subsequent rows
-    if ($row) {
-        $fattr->{td_attr} = \%tx_attr;
-        $self->{defn_t}->{field_attr}->{$field} = $fattr;
-    }
-
-    # Check %tx_attr for code values
-    my $tx_code = 0;
-    for my $v (values %tx_attr) {
-         if (ref $v eq 'CODE') {
-             $tx_code = 1;
-             $self->{defn_t}->{field_attr}->{$field}->{td_code} = 1 if $row;
-             last;
-         }
-    }
-
-    return ($fattr, \%tx_attr, $tx_code);
 }
 
 #
@@ -1214,17 +1181,23 @@ sub cell_single
     $tags = 1 unless defined $tags;
     die "Unknown arguments to cell_single: " . join(',', keys %args) if %args;
 
-    # Merge default and field attributes first time through (labels + data)
+    # Merge default and field attributes once for each field
+    $self->cell_merge_defaults($row, $field)
+        if ! $self->{defn_t}->{data_attr}->{$field};
+
     my $tx_code = 0;
     unless ($fattr && $tx_attr) {
-        if (! defined $row || $row eq 'thead' || ! $self->{defn_t}->{field_attr}->{$field}->{td_attr}) {
-            ($fattr, $tx_attr, $tx_code) = $self->cell_merge_defaults($row, $field);
+        if (! defined $row || $row eq 'thead') {
+            $fattr = $self->{defn_t}->{label_attr}->{$field};
+        }
+        elsif ($row eq 'tfoot') {
+            $fattr = $self->{defn_t}->{tfoot_attr}->{$field};
         }
         else {
-            $fattr = $self->{defn_t}->{field_attr}->{$field};
-            $tx_attr = $fattr->{td_attr};
-            $tx_code = $fattr->{td_code};
+            $fattr = $self->{defn_t}->{data_attr}->{$field};
         }
+        $tx_attr = $fattr->{tx_attr};
+        $tx_code = $fattr->{tx_code};
     }
 
     # Standard (non-composite) fields
