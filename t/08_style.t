@@ -10,17 +10,17 @@ BEGIN { use_ok( 'HTML::Tabulate' ) }
 my %result = ();
 my $test = "$Bin/t8";
 die "missing data dir $test" unless -d $test;
-opendir DATADIR, $test or die "can't open directory $test";
-for (readdir DATADIR) {
+opendir my $datadir, $test or die "can't open directory $test";
+for (readdir $datadir) {
   next if m/^\./;
-  open FILE, "<$test/$_" or die "can't read $test/$_";
+  open my $fh, "<$test/$_" or die "can't read $test/$_";
   { 
     local $/ = undef;
-    $result{$_} = <FILE>;
+    $result{$_} = <$fh>;
   }
-  close FILE;
+  close $fh;
 }
-close DATADIR;
+close $datadir;
 
 # Standard (style => 'down')
 my $t = HTML::Tabulate->new({
