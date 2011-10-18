@@ -1,4 +1,5 @@
 .bzr
+.git
 EXCLUDE
 Makefile.old
 Makefile
