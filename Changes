@@ -1,32 +1,32 @@
 ChangeLog
 ---------
 
-[2011-10-14]
-* Bump $VERSION to 0.38.
-* Add initial data_prepend support to Tabulate.
+[2011-10-16]
+* Bump $VERSION to 0.39.
+* Add initial tfoot support.
+* Clean up cell_merge_defaults, now called only once per field.
+* Modify Tabulate to call format even on empty data fields.
 
 [2011-10-10]
-* Update Copyright details in README.
-* Update Changes file for 0.37 release.
+* Bump $VERSION to 0.38.
+* Add initial data_prepend support.
 * Add support for a 'derived' fields arrayref and field_attr flag.
 
 [2011-08-26]
+* Bump $VERSION to 0.37.
 * Add first-pass labelgroups support.
 * Refactor row_down for clarity.
 * Refactor cell_wantarray interface to named parameter version.
-
-[2011-08-25]
-* Add 'cols' support to colgroups.
-* Add initial support for colgroups.
+* Add initial support for colgroups and cols.
 
 [2011-08-24]
 * Redo Tabulate::cell_value to try 'safe' field methods as fallback.
-* Add .gitignore, remove .bzrignore.
 * Update Module::Install to 1.0.
 * Tweak cell_value to check $row->get_column() before methods.
 
 [2010-03-05]
-* Tweak procedural render to handle blessed datasets; bump to version 0.36.
+* Bump $VERSION to 0.36.
+* Tweak procedural render to handle blessed datasets.
 
 [2010-02-01]
 * Bump version to 0.35.
@@ -35,12 +35,12 @@ ChangeLog
 * Updates to Changes, EXCLUDE, MANIFEST, and MANIFEST.SKIP.
 
 [2010-01-26]
-* Convert Makefile.PL to Module::Install; bump version to 0.34.
+* Bump version to 0.34.
+* Convert Makefile.PL to Module::Install.
 
 [2010-01-20]
+* Bump version to 0.33.
 * Add proper handling of minimised attributes in html and xhtml modes.
-* Update MANIFEST.
-* Add Changes file; bump version number to 0.33.
 * Document 'xhtml' mode, and add an xhtml unit test.
 * Document 'colspan' support.
 
@@ -81,6 +81,4 @@ ChangeLog
 
 [2007-09-22]
 * Fix typo in SYNOPSIS.
-
-[2007-06-11]
 
