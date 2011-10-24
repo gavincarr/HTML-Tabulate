@@ -1107,7 +1107,7 @@ sub cell_composite
         or die "Missing composite field attribute";
     my @composite = ();
     for my $f (@$composite) {
-        push @composite, $self->cell($row, $f, undef, undef, tags => 0);
+        push @composite, $self->cell_single(row => $row, field => $f, tags => 0);
     }
 
     my $composite_join = $fattr->{composite_join} || ' ';
@@ -1569,13 +1569,13 @@ sub row_across
 
     # Label/heading
     if ($self->{defn_t}->{labels}) {
-        push @cells, $self->cell(undef, $field);
-        push @across_row, $self->cell(undef, $field, undef, undef, tags => 0);
+        push @cells, $self->cell_single(field => $field);
+        push @across_row, $self->cell_single(field => $field, tags => 0);
     }
 
     # Data
     for my $row (@$data) {
-        push @cells, $self->cell($row, $field);
+        push @cells, $self->cell_single(row => $row, field => $field);
         push @across_row, $self->cell_value($row, $field);
     }
 
