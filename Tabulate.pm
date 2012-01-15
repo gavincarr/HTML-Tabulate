@@ -1566,16 +1566,22 @@ sub row_across
     my ($self, $data, $rownum, $field) = @_;
     my @cells = ();
     my @across_row = ();
+    my $skip_count = 0;
 
     # Label/heading
     if ($self->{defn_t}->{labels}) {
-        push @cells, $self->cell_single(field => $field);
+        push @cells, $self->cell_single(field => $field, skip_count => \$skip_count);
         push @across_row, $self->cell_single(field => $field, tags => 0);
     }
 
     # Data
     for my $row (@$data) {
-        push @cells, $self->cell_single(row => $row, field => $field);
+        if ($skip_count > 0) {
+            $skip_count--;
+            next;
+        }
+
+        push @cells, $self->cell_single(row => $row, field => $field, skip_count => \$skip_count);
         push @across_row, $self->cell_value($row, $field);
     }
 
