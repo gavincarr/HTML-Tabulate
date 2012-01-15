@@ -1286,12 +1286,19 @@ sub stripe
                 unless $rownum == 0 && exists $tr->{bgcolor};
         }
         elsif (ref $stripe->[$r] eq 'HASH') {
+            # Class attributes are special in that they're additive,
+            # so we can merge instead of overwriting
+            if ($stripe->[$r]->{class} && $tr->{class}) {
+                $tr->{class} = "$stripe->[$r]->{class} $tr->{class}";
+            }
+
             # Existing attributes take precedence over stripe ones for header
-            if ($rownum == 0) {
+            elsif ($rownum == 0) {
                 for (keys %{$stripe->[$r]}) {
                     $tr->{$_} = $stripe->[$r]->{$_} unless exists $tr->{$_};
                 }
             }
+
             # For non-header rows, merge attributes straight into $tr
             else {
                 @$tr{keys %{$stripe->[$r]}} = values %{$stripe->[$r]};

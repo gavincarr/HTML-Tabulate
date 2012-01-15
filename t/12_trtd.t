@@ -1,6 +1,6 @@
 # tr/td coderef testing
 
-use Test::More tests => 8;
+use Test::More;
 use HTML::Tabulate;
 use Data::Dumper;
 use strict;
@@ -136,4 +136,24 @@ $table = $t->render($data, {
 });
 report $table, "trsub_across";
 is($table, $result{trsub_across}, "tr attr sub, across");
+
+# tr class sub with striping
+$table = $t->render($data, {
+  labels => [ qw(ID name title), 'Birth Date' ],
+  labels => { 
+    emp_id => 'ID',
+    emp_name => 'Name', 
+    emp_title => 'Title',
+    emp_birth_dt => 'Birth Date',
+  },
+  style => 'down',
+  stripe => => [ { class => 'o' }, { class => 'e' } ],
+  tr => {
+    class => sub { my ($r) = @_; my $name = $r->[0]; $name =~ s!\s+!_!; lc "row_$name" }, 
+  },
+});
+report $table, "trsub_stripe";
+is($table, $result{trsub_stripe}, "tr class sub w/striping");
+
+done_testing;
 
