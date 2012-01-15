@@ -1,6 +1,10 @@
 ChangeLog
 ---------
 
+[2012-01-16]
+* Bump $VERSION to 0.40.
+* Tweak stripe class attributes to merge with tr, not overwrite.
+
 [2011-10-16]
 * Bump $VERSION to 0.39.
 * Add initial tfoot support.
