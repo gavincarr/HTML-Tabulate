@@ -12,7 +12,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.40';
+$VERSION = '0.41';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -312,15 +312,13 @@ sub derive_fields
         $self->{prefetch} = $row;
         $defn->{fields} = [ sort keys %$row ] if eval { keys %$row };
     }
-    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
-            $set->can('First') && $set->can('Next')) {
-        my $row = $set->First;
+    elsif (blessed $set and $set->can('Next')) {
+        my $row = $set->can('First') ? $set->First : $set->Next;
         $self->{prefetch} = $row;
         $defn->{fields} = [ sort keys %$row ] if eval { keys %$row };
     }
-    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
-            $set->can('first') && $set->can('next')) {
-        my $row = $set->first;
+    elsif (blessed $set and $set->can('next')) {
+        my $row = $set->can('first') ? $set->first : $set->next;
         $self->{prefetch} = $row;
         $defn->{fields} = [ sort keys %$row ] if eval { keys %$row };
     }
@@ -1445,16 +1443,14 @@ sub data_iterator
           $row = $row ? $set->() : ($self->{prefetch} || $set->());
         };
     }
-    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
-            $set->can('First') && $set->can('Next')) {
+    elsif (blessed $set and $set->can('Next')) {
         return sub {
-          $row = $row ? $set->Next : ($self->{prefetch} || $set->First);
+          $row = $row ? $set->Next : ($self->{prefetch} || eval { $set->First } || $set->Next);
         };
     }
-    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
-            $set->can('first') && $set->can('next')) {
+    elsif (blessed $set and $set->can('next')) {
         return sub {
-          $row = $row ? $set->next : ($self->{prefetch} || $set->first);
+          $row = $row ? $set->next : ($self->{prefetch} || eval { $set->first } || $set->next);
         };
     }
     elsif (ref $set eq 'ARRAY') {
@@ -1610,9 +1606,8 @@ sub get_dataset
             push @data, $row;
         }
     }
-    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
-            $set->can('First') && $set->can('Next')) {
-        my $row = $set->First;
+    elsif (blessed $set and $set->can('Next')) {
+        my $row = eval { $set->First } || $set->Next;
         if (ref $row) {
             do {
                 push @data, $row;
@@ -1620,9 +1615,8 @@ sub get_dataset
             while ($row = $set->Next);
         }
     }
-    elsif (UNIVERSAL::isa($set,'UNIVERSAL') &&
-            $set->can('first') && $set->can('next')) {
-        my $row = $set->first;
+    elsif (blessed $set and $set->can('next')) {
+        my $row = eval { $set->first } || $set->next;
         if (ref $row) {
             do {
                 push @data, $row;

@@ -1,6 +1,10 @@
 ChangeLog
 ---------
 
+[2012-03-07]
+* Bump $VERSION to 0.41.
+* Allow [Ff]irst methods to be optional on [Nn]ext iterators.
+
 [2012-01-16]
 * Bump $VERSION to 0.40.
 * Tweak stripe class attributes to merge with tr, not overwrite.
