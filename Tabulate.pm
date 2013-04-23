@@ -12,7 +12,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.41';
+$VERSION = '0.42';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -1065,15 +1065,18 @@ sub cell_value
         }
         else {
             # get_column() methods e.g. DBIx::Class
-            $value = eval { $row->get_column($field) }
-                if eval { $row->can('get_column') };
+            if (eval { $row->can('get_column') }) {
+                $value = eval { $row->get_column($field) };
+            }
             # Allow field-methods e.g. Class::DBI, DBIx::Class
-            $value = eval "\$row->$field()"
-                if ! defined $value && eval { $row->can($field) }
-                     && $field ne 'delete';  # special DBIx::Class protection :-)
+            elsif (eval { $row->can($field) }
+                   && $field ne 'delete') {    # special DBIx::Class protection :-)
+                $value = eval "\$row->$field()";
+            }
             # Hash-based rows
-            $value = $row->{$field}
-                if ! defined $value && ref $row eq 'HASH' && exists $row->{$field};
+            elsif (ref $row eq 'HASH' && exists $row->{$field}) {
+                $value = $row->{$field};
+            }
         }
     }
 
