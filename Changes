@@ -1,6 +1,10 @@
 ChangeLog
 ---------
 
+[2013-04-23]
+* Bump $VERSION to 0.42.
+* Make Tabulate cell value derivation slightly cleaner (no fall-through).
+
 [2012-03-07]
 * Bump $VERSION to 0.41.
 * Allow [Ff]irst methods to be optional on [Nn]ext iterators.
