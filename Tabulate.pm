@@ -869,7 +869,7 @@ sub cell_format_format
     my ($self, $data, $fattr, $row, $field) = @_;
     my $ref = ref $fattr->{format};
     croak "[cell_format] invalid '$field' format: $ref" if $ref && $ref ne 'CODE';
-    $data = &{$fattr->{format}}($data, $row || {}, $field) if $ref eq 'CODE';
+    $data = $fattr->{format}->($data, $row || {}, $field) if $ref eq 'CODE';
     $data = sprintf $fattr->{format}, $data if ! $ref;
     return $data;
 }
@@ -891,7 +891,7 @@ sub cell_format_link
     my $ref = ref $fattr->{link};
     croak "[cell_format] invalid '$field' link: $ref"
         if $ref && $ref ne 'CODE';
-    $ldata = &{$fattr->{link}}($data_unformatted, $row || {}, $field) 
+    $ldata = $fattr->{link}->($data_unformatted, $row || {}, $field)
         if $ref eq 'CODE';
     $ldata = sprintf $fattr->{link}, $data_unformatted 
         if ! $ref;
@@ -1084,7 +1084,7 @@ sub cell_value
     if (exists $fattr->{value} && ref $fattr->{value}) {
         my $ref = ref $fattr->{value};
         if ($ref eq 'CODE') {
-            $value = &{$fattr->{value}}($value, $row, $field);
+            $value = $fattr->{value}->($value, $row, $field);
         }
         else {
             croak "[cell_value] invalid '$field' value (not scalar or code ref): $ref";
