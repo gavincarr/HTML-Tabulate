@@ -8,6 +8,7 @@ use Test::More;
 use HTML::Tabulate;
 use Data::Dumper;
 use FindBin qw($Bin);
+use lib "$Bin/lib";
 
 plan skip_all => '$ENV{HTML_TABULATE_TEST_DSN} not set - skipping db iterator tests'
   unless $ENV{HTML_TABULATE_TEST_DSN};
@@ -45,7 +46,11 @@ SKIP: {
   my $db_tests = 2;
 
   # Setup test data
-  ok($dbh = DBI->connect($ENV{HTML_TABULATE_TEST_DSN}, $ENV{HTML_TABULATE_TEST_USER}, $ENV{HTML_TABULATE_TEST_PASS}), 
+  ok($dbh = DBI->connect(
+      $ENV{HTML_TABULATE_TEST_DSN},
+      $ENV{HTML_TABULATE_TEST_USER},
+      $ENV{HTML_TABULATE_TEST_PASS},
+      { RaiseError => 1 }), 
     "connected to db '$ENV{HTML_TABULATE_TEST_DSN}' ok");
   ok($dbh->do("drop table if exists emp_tabulate"), 'drop table emp_tabulate ok');
   ok($dbh->do(qq(
@@ -84,12 +89,12 @@ SKIP: {
     # Render1
     my $table = $t->render($set);
 #   print $table, "\n";
-    is ($table, $result{render1}, "DBIx::Recordset render1 okay");
+    is($table, $result{render1}, "DBIx::Recordset render1 okay");
 
     # Render2 (across)
     $table = $t->render($set, { style => 'across' });
 #   print $table, "\n";
-    is ($table, $result{render2}, "DBIx::Recordset render2 okay");
+    is($table, $result{render2}, "DBIx::Recordset render2 okay");
   }
 
   SKIP: {
@@ -114,21 +119,22 @@ SKIP: {
     # Render1
     my $table = $t->render($iter);
 #   print $table, "\n";
-    is ($table, $result{render1}, "Class::DBI render1 okay");
+    is($table, $result{render1}, "Class::DBI render1 okay");
 
     # Render2 (across)
     $table = $t->render($iter, { style => 'across' });
 #   print $table, "\n";
-    is ($table, $result{render2}, "Class::DBI render2 okay");
+    is($table, $result{render2}, "Class::DBI render2 okay");
   }
 
   SKIP: {
     # DBIx::Class setup
     eval { require DBIx::Class } or skip "DBIx::Class not installed", $db_tests;
-    eval { require DBIx::Class::Schema::Loader } or skip "DBIx::Class::Schema::Loader not installed", $db_tests;
-    DBIx::Class::Schema::Loader::make_schema_at('HTML::Tabulate::Schema', { debug => 0 },
-      [ $ENV{HTML_TABULATE_TEST_DSN}, $ENV{HTML_TABULATE_TEST_USER}, $ENV{HTML_TABULATE_TEST_PASS} ])
-      or skip "Cannot create temp DBIx::Class Schema from database", $db_tests;
+    require HTML::Tabulate::Schema;
+#   eval { require DBIx::Class::Schema::Loader } or skip "DBIx::Class::Schema::Loader not installed", $db_tests;
+#   DBIx::Class::Schema::Loader::make_schema_at('HTML::Tabulate::Schema', { debug => 0 },
+#     [ $ENV{HTML_TABULATE_TEST_DSN}, $ENV{HTML_TABULATE_TEST_USER}, $ENV{HTML_TABULATE_TEST_PASS} ])
+#     or skip "Cannot create temp DBIx::Class Schema from database", $db_tests;
   
     my $schema = eval { HTML::Tabulate::Schema->connect(sub { $dbh }) }
       or skip("DBIx::Class schema connect failed: $@", $db_tests);
@@ -137,13 +143,15 @@ SKIP: {
  
     # Render1
     my $table = $t->render($iter);
-#   print $table, "\n";
-    is ($table, $result{render1}, "DBIx::Class render1 okay");
+    is($table, $result{render1}, "DBIx::Class render1 okay");
 
     # Render2 (across)
     $table = $t->render($iter, { style => 'across' });
-#   print $table, "\n";
-    is ($table, $result{render2}, "DBIx::Class render2 okay");
+    is($table, $result{render2}, "DBIx::Class render2 okay");
+
+    # Render4 (render method column name())
+    $table = $t->render($iter, { fields => [ qw(emp_id name emp_title) ] });
+    is($table, $result{render4}, "DBIx::Class render4 okay");
   }
 
   eval { $dbh->do("drop table if exists emp_tabulate") };
