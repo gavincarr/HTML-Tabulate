@@ -74,6 +74,11 @@ __PACKAGE__->set_primary_key("emp_id");
 # Created by DBIx::Class::Schema::Loader v0.07017 @ 2013-04-25 13:02:08
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:/RjzMMv+IzWqUJ6+9tVG9A
 
+# Relationships
+
+# Join to self
+__PACKAGE__->has_one('self_join', 'HTML::Tabulate::Schema::Result::EmpTabulate', 'emp_id');
+
 # Additional methods
 
 sub name {

@@ -1,7 +1,5 @@
 # iterator testing - DBIx::Recordset and Class::DBI iterators
 # 
-# uses the mysql 'test' database, if available
-#
 
 use strict;
 use Test::More;
@@ -131,15 +129,16 @@ SKIP: {
     # DBIx::Class setup
     eval { require DBIx::Class } or skip "DBIx::Class not installed", $db_tests;
     require HTML::Tabulate::Schema;
-#   eval { require DBIx::Class::Schema::Loader } or skip "DBIx::Class::Schema::Loader not installed", $db_tests;
-#   DBIx::Class::Schema::Loader::make_schema_at('HTML::Tabulate::Schema', { debug => 0 },
-#     [ $ENV{HTML_TABULATE_TEST_DSN}, $ENV{HTML_TABULATE_TEST_USER}, $ENV{HTML_TABULATE_TEST_PASS} ])
-#     or skip "Cannot create temp DBIx::Class Schema from database", $db_tests;
   
     my $schema = eval { HTML::Tabulate::Schema->connect(sub { $dbh }) }
       or skip("DBIx::Class schema connect failed: $@", $db_tests);
-    my $iter = $schema->resultset('EmpTabulate')
-      or skip("DBIx::Class employee iterator setup failed: $@", $db_tests);
+    my $iter = $schema->resultset('EmpTabulate')->search({}, {
+        # Join to self and add a joined column for get_column testing
+        join => 'self_join',
+        '+columns' => {
+          joined_emp_title  => 'self_join.emp_title',
+        },
+      }) or skip("DBIx::Class employee iterator setup failed: $@", $db_tests);
  
     # Render1
     my $table = $t->render($iter);
@@ -150,7 +149,10 @@ SKIP: {
     is($table, $result{render2}, "DBIx::Class render2 okay");
 
     # Render4 (render method column name())
-    $table = $t->render($iter, { fields => [ qw(emp_id name emp_title) ] });
+    $table = $t->render($iter, {
+      fields => [ qw(emp_id name joined_emp_title) ],
+      labels => { 'joined_emp_title' => 'Emp Title' },
+    });
     is($table, $result{render4}, "DBIx::Class render4 okay");
   }
 
