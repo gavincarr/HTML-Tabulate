@@ -2,6 +2,11 @@ ChangeLog
 ---------
 
 [2013-04-24]
+* Bump $VERSION to 0.44.
+* Bah, add DBIx::Class get_column support back to Tabulate cell_value (we need both).
+* Improve t/10_iterator.t unit tests.
+
+[2013-04-24]
 * Bump $VERSION to 0.43.
 * Update Tabulate cell_value to use methods for DBIx::Class, not get_column.
 * Improve t/10_iterator.t unit tests.
