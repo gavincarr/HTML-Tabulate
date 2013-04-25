@@ -36,6 +36,8 @@ t/27_composite.t
 t/29_colspan.t
 t/30_colgroup.t
 t/31_labelgroup.t
+t/lib/HTML/Tabulate/Schema.pm
+t/lib/HTML/Tabulate/Schema/Result/EmpTabulate.pm
 t/t07/render1
 t/t1/fbwb
 t/t1/fred
@@ -43,6 +45,7 @@ t/t1/fredbarney
 t/t10/render1
 t/t10/render2
 t/t10/render3
+t/t10/render4
 t/t11/render1
 t/t12/fattrsub1
 t/t12/fattrsub2
@@ -53,6 +56,7 @@ t/t12/tr1
 t/t12/trsub
 t/t12/trsub2
 t/t12/trsub_across
+t/t12/trsub_stripe
 t/t13/title1
 t/t13/title2
 t/t13/title3
