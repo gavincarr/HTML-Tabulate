@@ -1059,20 +1059,24 @@ sub cell_value
 
     # Get value from $row (but skip 'derived' fields)
     elsif (ref $row && ! $fattr->{derived}) {
-        if (ref $row eq 'ARRAY') {
+        if (blessed $row) {
+            # Field-methods e.g. Class::DBI, DBIx::Class
+            if (eval { $row->can($field) }
+                    && $field ne 'delete') {    # special DBIx::Class protection :-)
+                $value = eval { $row->$field() };
+            }
+            # For DBIx::Class we need to check both methods and get_column() values,
+            # since joined fields (+columns/+select) are only available via the latter
+            elsif (eval { $row->can('get_column') }) {
+                $value = eval { $row->get_column($field) };
+            }
+        }
+        elsif (ref $row eq 'ARRAY') {
             my $i = keys %{$defn->{field_map}} ? $defn->{field_map}->{$field} : $field;
             $value = $row->[ $i ] if defined $i;
         }
-        else {
-            # Allow field-methods e.g. Class::DBI, DBIx::Class
-            if (eval { $row->can($field) }
-                   && $field ne 'delete') {    # special DBIx::Class protection :-)
-                $value = eval { $row->$field() };
-            }
-            # Hash-based rows
-            elsif (ref $row eq 'HASH' && exists $row->{$field}) {
-                $value = $row->{$field};
-            }
+        elsif (ref $row eq 'HASH' && exists $row->{$field}) {
+            $value = $row->{$field};
         }
     }
 
