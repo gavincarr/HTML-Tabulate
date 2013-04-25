@@ -1064,14 +1064,10 @@ sub cell_value
             $value = $row->[ $i ] if defined $i;
         }
         else {
-            # get_column() methods e.g. DBIx::Class
-            if (eval { $row->can('get_column') }) {
-                $value = eval { $row->get_column($field) };
-            }
             # Allow field-methods e.g. Class::DBI, DBIx::Class
-            elsif (eval { $row->can($field) }
+            if (eval { $row->can($field) }
                    && $field ne 'delete') {    # special DBIx::Class protection :-)
-                $value = eval "\$row->$field()";
+                $value = eval { $row->$field() };
             }
             # Hash-based rows
             elsif (ref $row eq 'HASH' && exists $row->{$field}) {
