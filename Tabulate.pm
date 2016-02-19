@@ -657,7 +657,7 @@ sub labelgroup_fields
 #
 sub start_tag
 {
-    my ($self, $tag, $attr, $close) = @_;
+    my ($self, $tag, $attr, $close, $extra) = @_;
     my $xhtml = $self->{defn_t}->{xhtml};
     my $str = "<$tag";
     if (ref $attr eq 'HASH') {
