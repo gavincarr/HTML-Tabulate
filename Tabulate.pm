@@ -13,7 +13,7 @@ require Exporter;
 @EXPORT = qw();
 @EXPORT_OK = qw(&render);
 
-$VERSION = '0.44';
+$VERSION = '0.45';
 my $DEFAULT_TEXT_FORMAT = "<p>%s</p>\n";
 my %DEFAULT_DEFN = (
     style       => 'down', 
@@ -2661,7 +2661,7 @@ subref iterator support (version 0.31).
 
 =head1 COPYRIGHT
 
-Copyright 2003-2011, Gavin Carr.
+Copyright 2003-2016, Gavin Carr.
 
 This program is free software. You may copy or redistribute it under the 
 same terms as perl itself.

@@ -1,6 +1,10 @@
 ChangeLog
 ---------
 
+[2016-02-19]
+* Bump $VERSION to 0.45.
+* Switch to using HTML::Entities for html-entity escaping.
+
 [2013-04-24]
 * Bump $VERSION to 0.44.
 * Bah, add DBIx::Class get_column support back to Tabulate cell_value (we need both).
