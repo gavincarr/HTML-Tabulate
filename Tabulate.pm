@@ -4,6 +4,7 @@ use 5.005;
 use Carp;
 use URI::Escape;
 use Scalar::Util qw(blessed);
+use HTML::Entities qw(encode_entities);
 use strict;
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $TITLE_HEADING_LEVEL);
 
@@ -878,9 +879,7 @@ sub cell_format_format
 sub cell_format_escape
 {
     my ($self, $data) = @_;
-    $data =~ s/</&lt;/g;
-    $data =~ s/>/&gt;/g;
-    return $data;
+    return encode_entities($data);
 }
 
 # Link formatting
@@ -928,7 +927,7 @@ sub cell_format
 
     my $data_unformatted = $data;
 
-    # 'escape' boolean for simple tag escaping (defaults to on)
+    # 'escape' boolean for html entity escaping (defaults to on)
     $data = $self->cell_format_escape($data)
         if $data ne '' && ($fattr->{escape} || ! exists $fattr->{escape});
 
@@ -960,7 +959,11 @@ sub label
         $l = $label;
     }
     $l = $self->derive_label($field) unless defined $l;
-    $l = $self->{defn_t}->{null} if $l eq '' && defined $self->{defn_t}->{null};
+    if ($l eq '' && defined $self->{defn_t}->{null}) {
+        $l = $self->{defn_t}->{null};
+        # Turn off auto-escaping if $l now contains html entities
+        $self->{defn_t}->{label_attr}->{$field}->{escape} = 0 if $l =~ /&\w+;/;
+    }
     return $l;
 }
 
@@ -2466,8 +2469,8 @@ creates a link for the label like:
 
 =item escape
 
-Boolean (default true). HTML-escapes '<' and '>' characters in data 
-values.
+Boolean (default true). HTML-escapes unsafe characters ('<', '>', '&',
+'"', control-characters, etc.) in values.
 
 
 =item derived
