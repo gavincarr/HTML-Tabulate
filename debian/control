@@ -1,0 +1,42 @@
+Source: libhtml-tabulate-perl
+Maintainer: Gavin Carr <gavin@openfusion.net>
+Section: perl
+Priority: optional
+Build-Depends: debhelper-compat (= 13)
+Build-Depends-Indep: libclass-dbi-perl <!nocheck>,
+                     libdbi-perl <!nocheck>,
+                     libdbix-class-perl <!nocheck>,
+                     libdbix-recordset-perl <!nocheck>,
+                     libhtml-parser-perl <!nocheck>,
+                     libscalar-list-utils-perl <!nocheck>,
+                     libtest-simple-perl <!nocheck>,
+                     liburi-perl <!nocheck>,
+                     perl
+Standards-Version: 4.6.0
+Homepage: https://metacpan.org/release/HTML-Tabulate
+Rules-Requires-Root: no
+
+Package: libhtml-tabulate-perl
+Architecture: all
+Depends: ${misc:Depends},
+         ${perl:Depends},
+         libhtml-parser-perl,
+         libscalar-list-utils-perl,
+         liburi-perl
+Description: HTML table rendering class
+ HTML::Tabulate is used to render/display a given set of data in an HTML
+ table. It takes a data set and a presentation definition and applies the
+ presentation to the data set to produce the HTML table output. The
+ presentation definition accepts arguments corresponding to HTML table tags
+ ('table', 'tr', 'th', 'td' etc.), to define attributes for those tags, plus
+ additional arguments for other aspects of the presentation. HTML::Tabulate
+ supports advanced features like automatic striping, arbitrary cell
+ formatting, link creation, etc.
+ .
+ Presentation definitions can be defined in multiple passes, which are
+ progressively merged, allowing general defaults to be defined in common and
+ then overridden by more specific requirements. Presentation definitions are
+ stored in the current object, except for those defined for a specific
+ 'render', which are temporary.
+ .
+ This description was automagically extracted from the module by dh-make-perl.
